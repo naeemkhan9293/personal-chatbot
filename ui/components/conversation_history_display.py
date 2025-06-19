@@ -38,7 +38,7 @@ class ConversationHistoryDisplay(ctk.CTkScrollableFrame):
                 wraplength=int(self.winfo_width() * rel_width) or 400,
                 fg_color=fg_color,
                 text_color=text_color,
-                corner_radius=12,
+                corner_radius=5,
                 font=ctk.CTkFont(size=14),
                 anchor="w",
             )
