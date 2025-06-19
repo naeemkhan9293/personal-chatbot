@@ -7,7 +7,7 @@ from langchain_core.messages import AIMessage
 def process_chat(state: AgentState) -> AgentState:
     """This node will solve the request input by user"""
     response = google_llm.invoke(state["messages"])
-    state["messages"].append(AIMessage(content=response.content))
+    state["messages"].append(AIMessage(content=response))
     return state
 
 

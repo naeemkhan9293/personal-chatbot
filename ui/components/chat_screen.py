@@ -3,6 +3,9 @@ from customtkinter import CTkImage
 from PIL import Image
 import os
 from components.tooltip import Tooltip
+from agents.chat_graph import update_conversation_history
+from components.conversation_history_display import ConversationHistoryDisplay
+
 
 
 
@@ -14,10 +17,9 @@ class ChatScreen(ctk.CTkFrame):
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=0)
 
-        label = ctk.CTkLabel(
-            self, text="Chat Screen", font=ctk.CTkFont(size=20, weight="bold")
-        )
-        label.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="nsew")
+        # Conversation history display
+        self.history_display = ConversationHistoryDisplay(self)
+        self.history_display.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="nsew")
 
         # --- Input Area Frame ---
         input_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -78,7 +80,8 @@ class ChatScreen(ctk.CTkFrame):
         message_text = self.chat_input.get()
         if message_text.strip(): # Check if the message is not just whitespace
             print(f"Sending message: {message_text}")
-            # Here you would add your logic to actually send/process the message
+            update_conversation_history(message_text)
+            self.history_display.update_display()  # Refresh conversation
             self.chat_input.delete(0, ctk.END) 
         else:
             print("Message is empty.")

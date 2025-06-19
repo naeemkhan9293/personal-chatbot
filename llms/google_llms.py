@@ -13,4 +13,4 @@ else:
     print(f"API key loaded: {google_api_key[:10]}...{google_api_key[-4:] if len(google_api_key) > 14 else google_api_key}")
     print(f"API key length: {len(google_api_key)}")
 
-google_llm = GoogleGenerativeAI(model="gemini-2.0-flas")
+google_llm = GoogleGenerativeAI(model="gemini-2.0-flash")
