@@ -44,7 +44,7 @@ class ConversationHistoryDisplay(ctk.CTkScrollableFrame):
             )
             label.pack(
                 side="right" if is_user else "left",
-                padx=(10, 0) if is_user else (0, 10),
+                padx=(15, 15) if is_user else (15, 15),
                 ipadx=8,
                 ipady=5,
                 fill="both",

@@ -5,6 +5,7 @@ import os
 from components.tooltip import Tooltip
 from agents.chat_graph import update_conversation_history
 from components.conversation_history_display import ConversationHistoryDisplay
+import threading
 
 
 
@@ -31,7 +32,7 @@ class ChatScreen(ctk.CTkFrame):
         # Construct path relative to this file's location
         current_dir = os.path.dirname(os.path.abspath(__file__))
         send_icon_path = os.path.join(
-            current_dir, "..", "assets", "icons", "paper_plane.png"
+            current_dir, "..", "assets", "icons", "paper_plane.png"  
         )
         attachment_icon_path = os.path.join(
             current_dir, "..", "assets", "icons", "attachment.png"
@@ -80,8 +81,12 @@ class ChatScreen(ctk.CTkFrame):
         message_text = self.chat_input.get()
         if message_text.strip(): # Check if the message is not just whitespace
             print(f"Sending message: {message_text}")
-            update_conversation_history(message_text)
-            self.history_display.update_display()  # Refresh conversation
+            threading.Thread(target=self._process_message, args=(message_text,), daemon=True).start()
             self.chat_input.delete(0, ctk.END) 
         else:
             print("Message is empty.")
+
+    def _process_message(self, message_text):
+        from agents.chat_graph import update_conversation_history
+        update_conversation_history(message_text)
+        self.after(0, self.history_display.update_display)

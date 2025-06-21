@@ -23,3 +23,4 @@ class SideBar(ctk.CTkFrame):
         history_button = ctk.CTkButton(self, text="History", corner_radius=0,
                                          command=self.master.show_history_screen)
         history_button.grid(row=1, column=0,  pady=1, sticky="ew")
+    
