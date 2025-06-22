@@ -1,7 +1,7 @@
 from memory.agents_memory import AgentState
 from langgraph.graph import StateGraph, START, END
 from node.process_chat import process_chat
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, AIMessage
 
 chat_graph = StateGraph(AgentState)
 chat_graph.add_node("process_chat", process_chat)
@@ -10,6 +10,7 @@ chat_graph.add_edge("process_chat", END)
 
 chat_agent = chat_graph.compile()
 conversation_history = []
+# conversation_history = [HumanMessage(content='hi hello how are you', additional_kwargs={}, response_metadata={}), AIMessage(content='I am doing well, thank you for asking! How are you today?', additional_kwargs={}, response_metadata={})]
 
 
 def update_conversation_history(message: str):
