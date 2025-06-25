@@ -1,15 +1,17 @@
-from typing import Union
-
 from fastapi import FastAPI
+from pydantic import BaseModel
+from agents.chat_graph import update_conversation_history, conversation_history
 
 app = FastAPI()
 
-
-@app.get("/")
-async def read_root():
-    return {"Hello": "World"}
+class ChatRequest(BaseModel):
+    message: str
 
 
-@app.get("/items/{item_id}")
-async def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+@app.post("/chat")
+async def chat_endpoint(chat_request: ChatRequest):
+    update_conversation_history(chat_request.message)
+
+    return {"response": conversation_history}
+
+
