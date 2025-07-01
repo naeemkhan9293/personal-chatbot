@@ -45,6 +45,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+import { store } from "./store";
+import { Provider } from "react-redux";
+import { SidebarInset, SidebarProvider } from "./components/ui/sidebar";
+import { AppSidebar } from "./components/app-sidebar";
+
 export default function App() {
-  return <Outlet />;
+  return (
+    <Provider store={store}>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <Outlet />
+        </SidebarInset>
+      </SidebarProvider>
+    </Provider>
+  );
 }

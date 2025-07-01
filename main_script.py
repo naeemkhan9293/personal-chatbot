@@ -34,49 +34,47 @@ load_dotenv()
 def run_full_stack():
     """Run both FastAPI backend and Remix frontend in parallel."""
     import subprocess
-    import threading
     import time
     import signal
 
     processes = []
 
-    def run_fastapi():
-        # Start FastAPI with uvicorn
-        proc = subprocess.Popen([
-            sys.executable, '-m', 'uvicorn', 'api.main:app', '--reload'
-        ])
-        processes.append(proc)
-        proc.wait()
-
-    def run_remix():
-        # Start Remix app (npm run dev) in chat_ui directory
-        try:
-            proc = subprocess.Popen(
-                'npm run dev',
-                cwd=os.path.join(PROJECT_ROOT, 'chat_ui'),
-                shell=True  # Needed for Windows to find npm
-            )
-            processes.append(proc)
-            proc.wait()
-        except FileNotFoundError:
-            print("Error: 'npm' command not found. Please ensure Node.js and npm are installed and available in your PATH.")
-
-    threads = [
-        threading.Thread(target=run_fastapi),
-        threading.Thread(target=run_remix)
-    ]
-    for t in threads:
-        t.start()
-
-    try:
-        while any(t.is_alive() for t in threads):
-            time.sleep(1)
-    except KeyboardInterrupt:
+    def signal_handler(sig, frame):
         print("\nShutting down servers...")
         for proc in processes:
             proc.terminate()
         for proc in processes:
             proc.wait()
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
+    # Start FastAPI with uvicorn
+    fastapi_proc = subprocess.Popen([
+        sys.executable, '-m', 'uvicorn', 'api.main:app', '--reload'
+    ])
+    processes.append(fastapi_proc)
+
+    # Start Remix app (npm run dev) in chat_ui directory
+    try:
+        remix_proc = subprocess.Popen(
+            'npm run dev',
+            cwd=os.path.join(PROJECT_ROOT, 'chat_ui'),
+            shell=True  # Needed for Windows to find npm
+        )
+        processes.append(remix_proc)
+    except FileNotFoundError:
+        print("Error: 'npm' command not found. Please ensure Node.js and npm are installed and available in your PATH.")
+        fastapi_proc.terminate()
+        fastapi_proc.wait()
+        sys.exit(1)
+
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        signal_handler(None, None)
 
 if __name__ == "__main__":
     run_full_stack()

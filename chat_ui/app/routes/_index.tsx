@@ -1,4 +1,5 @@
 import type { MetaFunction } from "@remix-run/node";
+import { Link } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -9,38 +10,42 @@ export const meta: MetaFunction = () => {
 
 export default function Index() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground px-4">
-      <img
-        src="/robot.png"
-        alt="Personal Assistant Robot"
-        className="w-32 h-32 mb-6 drop-shadow-lg animate-fade-in rounded-full border-4 border-accent bg-card"
-        style={{ objectFit: 'cover' }}
-      />
-      <h1 className="text-4xl font-bold mb-2 tracking-tight">Personal Assistance</h1>
-      <p className="text-lg text-muted-foreground mb-6 text-center max-w-md">
-        Your AI-powered assistant for productivity, organization, and creativity.<br />
-        <span className="text-accent font-medium">Minimal. Fast. Reliable.</span>
-      </p>
-      <div className="flex flex-col gap-3 w-full max-w-xs">
-        <a
-          href="/chat/demo"
-          className="bg-primary text-primary-foreground rounded-lg py-2 px-4 font-semibold shadow hover:bg-primary/90 transition-colors text-center"
-        >
-          Try a Demo Chat
-        </a>
-        <a
-          href="https://github.com/your-repo"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm text-muted-foreground underline text-center hover:text-accent"
-        >
-          Learn more on GitHub
-        </a>
+    <main className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white px-4">
+      <div className="absolute inset-0 bg-grid-gray-800 [mask-image:linear-gradient(to_bottom,white_20%,transparent_100%)]"></div>
+      <div className="relative z-10 flex flex-col items-center">
+        <img
+          src="/robot.png"
+          alt="Personal Assistant Robot"
+          className="w-32 h-32 mb-6 drop-shadow-[0_0_2rem_#60a5fa] animate-fade-in rounded-full border-4 border-blue-500 bg-gray-800"
+          style={{ objectFit: 'cover' }}
+        />
+        <h1 className="text-5xl font-bold mb-2 tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">
+          Personal Assistance
+        </h1>
+        <p className="text-lg text-gray-400 mb-6 text-center max-w-md">
+          Your AI-powered assistant for productivity, organization, and creativity.<br />
+          <span className="text-blue-500 font-medium">Minimal. Fast. Reliable.</span>
+        </p>
+        <div className="flex flex-col gap-3 w-full max-w-xs">
+          <Link
+            to="/chat/demo"
+            className="bg-blue-600 text-white rounded-lg py-3 px-4 font-semibold shadow-lg hover:bg-blue-700 transition-all duration-300 ease-in-out text-center transform hover:scale-105"
+          >
+            Try a Demo Chat
+          </Link>
+          <a
+            href="https://github.com/your-repo"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-gray-500 underline text-center hover:text-blue-500 transition-colors"
+          >
+            Learn more on GitHub
+          </a>
+        </div>
+        <footer className="mt-10 text-xs text-gray-600 opacity-70">
+          &copy; {new Date().getFullYear()} Personal Assistance. All rights reserved.
+        </footer>
       </div>
-      <footer className="mt-10 text-xs text-muted-foreground opacity-70">
-        &copy; {new Date().getFullYear()} Personal Assistance. All rights reserved.
-      </footer>
     </main>
   );
 }
-
