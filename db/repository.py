@@ -44,3 +44,23 @@ async def get_messages(chat_id: str) -> list:
     if document:
         return document.get("messages", [])
     return []
+
+async def get_all_chats() -> list:
+    """
+    Retrieves all chats from the database.
+    """
+    db = get_database()
+    collection = db.conversations
+    
+    cursor = collection.find({}, {"_id": 1, "messages": {"$slice": 1}})
+    
+    chats = []
+    for document in await cursor.to_list(length=100):
+        chat_id = document.get("_id")
+        messages = document.get("messages", [])
+        first_message = messages[0] if messages else {}
+        chats.append({
+            "chat_id": chat_id,
+            "title": first_message.get("content", "New Chat")
+        })
+    return chats

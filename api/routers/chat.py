@@ -4,7 +4,7 @@ from typing import Optional
 import uuid
 
 from agents.chat_graph import update_conversation_history, get_conversation_history
-from db.repository import store_messages, get_messages
+from db.repository import store_messages, get_messages, get_all_chats
 
 router = APIRouter()
 
@@ -26,3 +26,8 @@ async def get_chat_history(chat_id: str):
     print(chat_id)
     messages = await get_messages(chat_id)
     return {"messages": messages}
+
+@router.get("/")
+async def get_all_chats_endpoint():
+    chats = await get_all_chats()
+    return {"chats": chats}
