@@ -1,13 +1,22 @@
 # e:/work-profile/personal-assistant/api/main.py
 
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from typing import Optional
+import uuid
 from contextlib import asynccontextmanager
+import logging
 
 # Import the lifespan functions and the db getter
 from db.db import connect_to_mongo, close_mongo_connection, get_database
-from agents.chat_graph import update_conversation_history, conversation_history
+from agents.chat_graph import update_conversation_history, get_conversation_history
+from db.repository import store_messages, get_messages
 from fastapi.middleware.cors import CORSMiddleware
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -15,14 +24,24 @@ async def lifespan(app: FastAPI):
     Context manager for the application's lifespan.
     Connects to the database on startup and closes the connection on shutdown.
     """
-    print("Application startup...")
+    logger.info("Application startup...")
     connect_to_mongo()
     yield
-    print("Application shutdown...")
+    logger.info("Application shutdown...")
     close_mongo_connection()
 
 # Pass the lifespan manager to the FastAPI app
 app = FastAPI(lifespan=lifespan)
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    logger.error(f"Validation error for request: {request.method} {request.url}")
+    logger.error(f"Request body: {await request.body()}")
+    logger.error(f"Validation errors: {exc.errors()}")
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": exc.errors()},
+    )
 
 origins = [
     "http://localhost:5173",
@@ -36,8 +55,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from pydantic import BaseModel
+from typing import Optional
+import uuid
+
 class ChatRequest(BaseModel):
     message: str
+    chat_id: Optional[str] = None
 
 @app.get("/")
 async def read_root():
@@ -57,7 +81,14 @@ async def read_root():
 
 @app.post("/chat")
 async def chat_endpoint(chat_request: ChatRequest):
-    # This endpoint doesn't seem to use the database, so it remains unchanged.
-    # If it needed the db, you would call get_database() inside this function.
-    update_conversation_history(chat_request.message)
-    return {"response": conversation_history}
+    if chat_request.chat_id is None:
+        chat_request.chat_id = str(uuid.uuid4())
+    update_conversation_history(chat_request.chat_id, chat_request.message)
+    conversation_history = get_conversation_history(chat_request.chat_id)
+    await store_messages(chat_request.chat_id, conversation_history)
+    return {"response": conversation_history, "chat_id": chat_request.chat_id}
+
+@app.get("/chat/{chat_id}")
+async def get_chat_history(chat_id: str):
+    messages = await get_messages(chat_id)
+    return {"messages": messages}

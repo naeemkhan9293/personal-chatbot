@@ -2,12 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
 import { useSendMessageMutation } from "~/store/api";
-import { useParams } from "@remix-run/react";
+import { useParams, useNavigate } from "@remix-run/react";
 
 export default function Chat() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [chatId, setChatId] = useState(id === "new" ? null : id);
   const [sendMessage, { isLoading }] = useSendMessageMutation();
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -19,6 +21,16 @@ export default function Chat() {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    if (id === "new") {
+      setChatId(null);
+      setMessages([]);
+    } else {
+      setChatId(id);
+      // TODO: Fetch existing messages for this chat id
+    }
+  }, [id]);
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -27,8 +39,13 @@ export default function Chat() {
     setMessages(newMessages);
     setInput("");
 
-    const { data } = await sendMessage({ message: input });
-    setMessages(data.response);
+    if (chatId) {
+      const { data } = await sendMessage({ message: input, chat_id: chatId });
+      setMessages(data.response);
+    } else {
+      const { data } = await sendMessage({ message: input });
+      navigate(`/chat/${data.chat_id}`);
+    }
   };
 
   return (

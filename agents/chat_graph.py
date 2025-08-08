@@ -9,12 +9,15 @@ chat_graph.add_edge(START, "process_chat")
 chat_graph.add_edge("process_chat", END)
 
 chat_agent = chat_graph.compile()
-conversation_history = []
-# conversation_history = [HumanMessage(content='hi hello how are you', additional_kwargs={}, response_metadata={}), AIMessage(content='I am doing well, thank you for asking! How are you today?', additional_kwargs={}, response_metadata={})]
+conversation_histories = {}
 
+def get_conversation_history(chat_id: str) -> list:
+    return conversation_histories.get(chat_id, [])
 
-def update_conversation_history(message: str):
-    global conversation_history
-    conversation_history.append(HumanMessage(content=message))
-    result = chat_agent.invoke({"messages": conversation_history})
-    conversation_history = result["messages"]
+def update_conversation_history(chat_id: str, message: str):
+    if chat_id not in conversation_histories:
+        conversation_histories[chat_id] = []
+    
+    conversation_histories[chat_id].append(HumanMessage(content=message))
+    result = chat_agent.invoke({"messages": conversation_histories[chat_id]})
+    conversation_histories[chat_id] = result["messages"]
