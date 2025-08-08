@@ -62,7 +62,7 @@ export default function Chat() {
   return (
     <div className="flex h-[calc(100vh-3.5rem)] bg-gray-900 text-white">
       <div className="flex flex-col flex-1">
-        <ChatMessages messages={messages} />
+        <ChatMessages messages={messages} isLoading={isSending} />
         <ChatInput onSendMessage={handleSendMessage} isLoading={isSending} />
       </div>
     </div>
