@@ -10,9 +10,8 @@ import logging
 
 # Import the lifespan functions and the db getter
 from db.db import connect_to_mongo, close_mongo_connection, get_database
-from agents.chat_graph import update_conversation_history, get_conversation_history
-from db.repository import store_messages, get_messages
 from fastapi.middleware.cors import CORSMiddleware
+from .routers import chat
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -56,7 +55,6 @@ async def general_exception_handler(request: Request, exc: Exception):
 
 origins = [
     "http://localhost:3000",
-    "http://localhost:5173",
 ]
 
 app.add_middleware(
@@ -67,13 +65,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from pydantic import BaseModel
-from typing import Optional
-import uuid
-
-class ChatRequest(BaseModel):
-    message: str
-    chat_id: Optional[str] = None
+app.include_router(chat.router, prefix="/chat", tags=["chat"])
 
 @app.get("/")
 async def read_root():
@@ -89,19 +81,3 @@ async def read_root():
     except Exception as e:
         print(f"Database connection error: {e}")
         return {"status": "online", "database_status": "error", "detail": str(e)}
-
-
-@app.post("/chat")
-async def chat_endpoint(chat_request: ChatRequest):
-    if chat_request.chat_id is None:
-        chat_request.chat_id = str(uuid.uuid4())
-    update_conversation_history(chat_request.chat_id, chat_request.message)
-    conversation_history = get_conversation_history(chat_request.chat_id)
-    await store_messages(chat_request.chat_id, conversation_history)
-    return {"response": conversation_history, "chat_id": chat_request.chat_id}
-
-@app.get("/chat/{chat_id}")
-async def get_chat_history(chat_id: str):
-    print(chat_id)
-    messages = await get_messages(chat_id)
-    return {"messages": messages}
