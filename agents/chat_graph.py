@@ -14,10 +14,20 @@ conversation_histories = {}
 def get_conversation_history(chat_id: str) -> list:
     return conversation_histories.get(chat_id, [])
 
+def load_conversation_history(chat_id: str, messages: list):
+    """Loads existing messages into the conversation history."""
+    conversation_histories[chat_id] = messages
+
 def update_conversation_history(chat_id: str, message: str):
     if chat_id not in conversation_histories:
         conversation_histories[chat_id] = []
     
-    conversation_histories[chat_id].append(HumanMessage(content=message))
-    result = chat_agent.invoke({"messages": conversation_histories[chat_id]})
+    # Append the new human message
+    current_history = conversation_histories.get(chat_id, [])
+    current_history.append(HumanMessage(content=message))
+    
+    # Invoke the chat agent
+    result = chat_agent.invoke({"messages": current_history})
+    
+    # Update the history with the new state from the agent
     conversation_histories[chat_id] = result["messages"]

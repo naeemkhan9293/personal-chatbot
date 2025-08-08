@@ -40,8 +40,8 @@ export default function Chat() {
 
     if (chatId) {
       const { data } = await sendMessage({ message, chat_id: chatId });
-      if (data) {
-        setMessages(data.response as Array<{content: string, type: 'human' | 'ai'}>);
+      if (data && data.response) {
+        setMessages((prevMessages) => [...prevMessages, data.response as unknown as {content: string, type: 'human' | 'ai'}]);
       }
     } else {
       const { data } = await sendMessage({ message });
