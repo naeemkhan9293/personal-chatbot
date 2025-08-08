@@ -5,6 +5,7 @@ import { useSendMessageMutation, useGetChatHistoryQuery } from "@/store/api";
 import { useParams, useRouter } from "next/navigation";
 import ChatInput from "@/components/chat/ChatInput";
 import ChatMessages from "@/components/chat/ChatMessages";
+import ChatLoading from "@/components/chat/ChatLoading";
 
 export default function Chat() {
   const params = useParams();
@@ -12,8 +13,8 @@ export default function Chat() {
   const id = params.id as string;
   const [messages, setMessages] = useState<Array<{content: string, type: 'human' | 'ai'}>>([]);
   const [chatId, setChatId] = useState(id === "new" ? null : id);
-  const [sendMessage, { isLoading }] = useSendMessageMutation();
-  const { data: chatHistoryData, refetch } = useGetChatHistoryQuery(chatId!, { skip: !chatId });
+  const [sendMessage, { isLoading: isSending }] = useSendMessageMutation();
+  const { data: chatHistoryData, refetch, isLoading: isHistoryLoading } = useGetChatHistoryQuery(chatId!, { skip: !chatId });
 
   useEffect(() => {
     if (id === "new") {
@@ -50,11 +51,19 @@ export default function Chat() {
     }
   };
 
+  if (isHistoryLoading) {
+    return (
+      <div className="flex h-[calc(100vh-3.5rem)] bg-gray-900 text-white items-center justify-center">
+        <ChatLoading />
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-[calc(100vh-3.5rem)] bg-gray-900 text-white">
       <div className="flex flex-col flex-1">
         <ChatMessages messages={messages} />
-        <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+        <ChatInput onSendMessage={handleSendMessage} isLoading={isSending} />
       </div>
     </div>
   );
