@@ -26,7 +26,7 @@ export default function Index() {
         </p>
         <div className="flex flex-col gap-3 w-full max-w-xs">
           <Link
-            href="/chat/new"
+            href="/dashboard/chat/new"
             className="bg-blue-600 text-white rounded-lg py-3 px-4 font-semibold shadow-lg hover:bg-blue-700 transition-all duration-300 ease-in-out text-center transform hover:scale-105"
           >
             Try a Demo Chat

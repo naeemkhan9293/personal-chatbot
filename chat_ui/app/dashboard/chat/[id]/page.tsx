@@ -58,9 +58,6 @@ export default function Chat() {
   return (
     <div className="flex h-screen bg-gray-900 text-white">
       <div className="flex flex-col flex-1">
-        <header className="bg-gray-800 py-4 px-6 flex items-center justify-between border-b border-gray-700">
-          <h1 className="text-xl font-bold">Personal Assistant</h1>
-        </header>
         <main className="flex-1 overflow-y-auto p-6">
           <div className="space-y-4">
             {messages.map((message, index) => (
