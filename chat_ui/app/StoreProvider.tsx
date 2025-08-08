@@ -2,6 +2,8 @@
 import { useRef } from "react";
 import { Provider } from "react-redux";
 import { store, AppStore } from "@/store/index";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
 
 export default function StoreProvider({
   children,
@@ -14,5 +16,12 @@ export default function StoreProvider({
     storeRef.current = store();
   }
 
-  return <Provider store={storeRef.current}>{children}</Provider>;
+  return (
+    <Provider store={storeRef.current}>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>{children}</SidebarInset>
+      </SidebarProvider>
+    </Provider>
+  );
 }
