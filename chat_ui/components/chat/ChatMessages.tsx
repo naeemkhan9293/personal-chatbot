@@ -22,7 +22,7 @@ export default function ChatMessages({ messages, isLoading }: ChatMessagesProps)
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isLoading]);
 
   return (
     <main className="flex-1 overflow-y-auto p-6">
@@ -35,8 +35,9 @@ export default function ChatMessages({ messages, isLoading }: ChatMessagesProps)
             <div className="rounded-full bg-gray-700 w-8 h-8 flex items-center justify-center">
               <FaRobot className="w-5 h-5 text-gray-400" />
             </div>
-            <div className="bg-gray-700 rounded-lg p-4 max-w-[75%]">
-              <ChatLoading />
+            <div className="bg-gray-700 rounded-lg p-4 max-w-[75%] flex items-center gap-2">
+              <ChatLoading className="h-5 w-5" />
+              <span>thinking...</span>
             </div>
           </div>
         )}
