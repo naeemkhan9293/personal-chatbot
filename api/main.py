@@ -43,7 +43,19 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={"detail": exc.errors()},
     )
 
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+    logger.error(f"An unexpected error occurred for request: {request.method} {request.url}")
+    logger.error(f"Error: {exc}")
+    import traceback
+    logger.error(f"Traceback: {traceback.format_exc()}")
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": "An internal server error occurred."},
+    )
+
 origins = [
+    "http://localhost:3000",
     "http://localhost:5173",
 ]
 
@@ -90,5 +102,6 @@ async def chat_endpoint(chat_request: ChatRequest):
 
 @app.get("/chat/{chat_id}")
 async def get_chat_history(chat_id: str):
+    print(chat_id)
     messages = await get_messages(chat_id)
     return {"messages": messages}

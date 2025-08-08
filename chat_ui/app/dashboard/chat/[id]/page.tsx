@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useSendMessageMutation } from "@/store/api";
+import { useSendMessageMutation, useGetChatHistoryQuery } from "@/store/api";
 import { useParams, useRouter } from "next/navigation";
+import { FaRobot, FaUser, FaPaperPlane } from "react-icons/fa";
 
 export default function Chat() {
   const params = useParams();
@@ -14,6 +15,7 @@ export default function Chat() {
   const [input, setInput] = useState("");
   const [chatId, setChatId] = useState(id === "new" ? null : id);
   const [sendMessage, { isLoading }] = useSendMessageMutation();
+  const { data: chatHistoryData, refetch } = useGetChatHistoryQuery(chatId!, { skip: !chatId });
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const scrollToBottom = () => {
@@ -30,9 +32,15 @@ export default function Chat() {
       setMessages([]);
     } else {
       setChatId(id);
-      // TODO: Fetch existing messages for this chat id
+      refetch();
     }
-  }, [id]);
+  }, [id, refetch]);
+
+  useEffect(() => {
+    if (chatHistoryData) {
+      setMessages(chatHistoryData.messages);
+    }
+  }, [chatHistoryData]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +58,7 @@ export default function Chat() {
     } else {
       const { data } = await sendMessage({ message: input });
       if (data) {
-        router.push(`/chat/${data.chat_id}`);
+        router.push(`/dashboard/chat/${data.chat_id}`);
       }
     }
   };
@@ -66,7 +74,7 @@ export default function Chat() {
                 className={`flex items-start gap-4 ${message.type === "human" ? "justify-end" : ""}`}>
                 {message.type === "ai" && (
                   <div className="rounded-full bg-gray-700 w-8 h-8 flex items-center justify-center">
-                    <BotIcon className="w-5 h-5 text-gray-400" />
+                    <FaRobot className="w-5 h-5 text-gray-400" />
                   </div>
                 )}
                 <div
@@ -75,7 +83,7 @@ export default function Chat() {
                 </div>
                 {message.type === "human" && (
                   <div className="rounded-full bg-gray-700 w-8 h-8 flex items-center justify-center">
-                    <UserIcon className="w-5 h-5 text-gray-400" />
+                    <FaUser className="w-5 h-5 text-gray-400" />
                   </div>
                 )}
               </div>
@@ -97,75 +105,11 @@ export default function Chat() {
               }}
             />
             <Button type="submit" className="absolute top-1/2 right-4 -translate-y-1/2 bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
-              <SendIcon className="w-5 h-5" />
+              <FaPaperPlane className="w-5 h-5" />
             </Button>
           </form>
         </footer>
       </div>
     </div>
-  );
-}
-
-function BotIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 8V4H8" />
-      <rect width="16" height="12" x="4" y="8" rx="2" />
-      <path d="M2 14h2" />
-      <path d="M20 14h2" />
-      <path d="M15 13v2" />
-      <path d="M9 13v2" />
-    </svg>
-  );
-}
-
-function SendIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m22 2-7 20-4-9-9-4Z" />
-      <path d="M22 2 11 13" />
-    </svg>
-  );
-}
-
-function UserIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
   );
 }

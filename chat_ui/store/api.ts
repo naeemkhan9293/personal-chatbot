@@ -11,7 +11,10 @@ export const api = createApi({
         body,
       }),
     }),
+    getChatHistory: builder.query<{messages: Array<{content: string, type: string}>}, string>({
+      query: (chat_id) => `chat/${chat_id}`,
+    }),
   }),
 });
 
-export const { useSendMessageMutation } = api;
+export const { useSendMessageMutation, useGetChatHistoryQuery } = api;
