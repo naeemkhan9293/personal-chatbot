@@ -37,7 +37,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
           isHuman
             ? "glass-intense bg-primary/20 border-primary/30"
             : "glass-intense"
-        } rounded-lg p-4 max-w-[75%] relative group`}
+        } rounded-lg p-4 xl:max-w-[75%] overflow-auto w-full relative group`}
       >
        
         <button

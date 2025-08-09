@@ -111,7 +111,7 @@ export function ChatProvider({ children }: ChatProviderProps) {
 function ChatRoot({ children }: { children: ReactNode }) {
   return (
     <div className="flex h-[calc(100vh-3.5rem)] text-foreground">
-      <div className="flex flex-col flex-1 glass-card m-4 overflow-hidden">
+      <div className="flex flex-col flex-1 glass-card md:m-4 overflow-hidden">
         {children}
       </div>
     </div>

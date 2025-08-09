@@ -25,7 +25,7 @@ export default function ChatMessages({ messages, isLoading }: ChatMessagesProps)
   }, [messages, isLoading]);
 
   return (
-    <main className="flex-1 overflow-y-auto md:p-6 bg-transparent">
+    <main className="flex-1 overflow-y-auto p-2 md:p-6 bg-transparent">
       <div className="space-y-4">
         {messages.map((message, index) => (
           <ChatMessage key={index} message={message} />
