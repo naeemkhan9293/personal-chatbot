@@ -29,6 +29,3 @@ def scrape_website(url: str) -> str:
         if "invalid session id" in str(e):
             return "Could not connect to the browser. Please ensure you have launched Chrome with the debugging port open."
         return f"An error occurred while scraping: {e}"
-    finally:
-        # We don't quit the driver, as it's attached to the user's browser
-        pass
