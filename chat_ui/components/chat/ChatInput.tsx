@@ -141,7 +141,7 @@ export default function ChatInput({ onSendMessage, isLoading }: ChatInputProps) 
             />
             <Button
               type="submit"
-              className="glass-intense absolute top-1/2 right-4 -translate-y-1/2 bg-primary/80 hover:bg-primary text-primary-foreground border-0 disabled:opacity-50"
+              className="glass-intense absolute -bottom-2 right-4 -translate-y-1/2 bg-primary/80 hover:bg-primary text-primary-foreground border-0 disabled:opacity-50"
               disabled={isLoading}
             >
               <FaPaperPlane className="w-5 h-5" />
