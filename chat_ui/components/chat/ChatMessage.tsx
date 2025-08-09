@@ -8,6 +8,7 @@ interface ChatMessageProps {
   message: {
     content: string;
     type: "human" | "ai";
+    image_url?: string;
   };
 }
 
@@ -50,6 +51,15 @@ export default function ChatMessage({ message }: ChatMessageProps) {
         >
           {message.content}
         </ReactMarkdown>
+        {message.image_url && (
+          <div className="mt-2">
+            <img
+              src={message.image_url}
+              alt="Generated image"
+              className="rounded-lg max-w-full h-auto"
+            />
+          </div>
+        )}
       </div>
       {isHuman && (
         <div className="rounded-full bg-gray-700 w-8 h-8 flex items-center justify-center">

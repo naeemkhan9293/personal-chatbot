@@ -17,7 +17,10 @@ def _message_to_dict(message):
     if isinstance(message, HumanMessage):
         return {"type": "human", "content": message.content}
     elif isinstance(message, AIMessage):
-        return {"type": "ai", "content": message.content}
+        response = {"type": "ai", "content": message.content}
+        if "image_url" in message.additional_kwargs:
+            response["image_url"] = message.additional_kwargs["image_url"]
+        return response
     else:
         return None
 
@@ -25,7 +28,10 @@ def _dict_to_message(message_dict):
     if message_dict['type'] == 'human':
         return HumanMessage(content=message_dict['content'])
     elif message_dict['type'] == 'ai':
-        return AIMessage(content=message_dict['content'])
+        additional_kwargs = {}
+        if "image_url" in message_dict:
+            additional_kwargs["image_url"] = message_dict["image_url"]
+        return AIMessage(content=message_dict['content'], additional_kwargs=additional_kwargs)
     else:
         return None
 

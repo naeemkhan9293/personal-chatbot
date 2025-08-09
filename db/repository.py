@@ -7,7 +7,10 @@ def _message_to_dict(message):
     if isinstance(message, HumanMessage):
         return {"type": "human", "content": message.content}
     elif isinstance(message, AIMessage):
-        return {"type": "ai", "content": message.content}
+        message_dict = {"type": "ai", "content": message.content}
+        if "image_url" in message.additional_kwargs:
+            message_dict["image_url"] = message.additional_kwargs["image_url"]
+        return message_dict
     else:
         return {"type": "unknown", "content": str(message)}
 
