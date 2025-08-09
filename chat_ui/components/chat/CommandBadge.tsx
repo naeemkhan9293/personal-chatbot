@@ -1,7 +1,7 @@
 import React from "react";
 
 interface CommandBadgeProps {
-  command: "generate image" | "scrap website";
+  command: "generate image" | "scrape website";
 }
 
 const commandStyles = {
@@ -9,8 +9,8 @@ const commandStyles = {
     label: "Image",
     bgColor: "bg-blue-800",
   },
-  "scrap website": {
-    label: "Scrap",
+  "scrape website": {
+    label: "Scrape",
     bgColor: "bg-green-800",
   },
 };

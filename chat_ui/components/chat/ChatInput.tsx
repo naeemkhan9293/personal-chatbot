@@ -9,7 +9,7 @@ interface ChatInputProps {
   isLoading: boolean;
 }
 
-type Command = "generate image" | "scrap website";
+type Command = "generate image" | "scrape website";
 
 export default function ChatInput({ onSendMessage, isLoading }: ChatInputProps) {
   const [input, setInput] = useState("");
@@ -18,7 +18,7 @@ export default function ChatInput({ onSendMessage, isLoading }: ChatInputProps) 
   const [focusedIndex, setFocusedIndex] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const badgeRef = useRef<HTMLSpanElement>(null);
-  const commands: Command[] = ["generate image", "scrap website"];
+  const commands: Command[] = ["generate image", "scrape website"];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;

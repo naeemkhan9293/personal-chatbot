@@ -2,15 +2,19 @@ from memory.agents_memory import AgentState
 from langgraph.graph import StateGraph, END
 from node.process_chat import process_chat
 from node.generate_image import generate_image
-from langchain_core.messages import HumanMessage
+from node.scrape_website import scrape_website_node
+from langchain_core.messages import HumanMessage, SystemMessage
 
-def should_generate_image(state: AgentState) -> str:
+def route_message(state: AgentState) -> str:
     """
-    Determines whether to generate an image or process a regular chat message.
+    Determines the appropriate node to handle the user's message.
     """
     last_message = state["messages"][-1].content
-    if last_message.startswith("/generate image"):
+    print(last_message)
+    if "/generate image" in last_message:
         return "generate_image"
+    if "/scrape website" in last_message:
+        return "scrape_website"
     return "process_chat"
 
 chat_graph = StateGraph(AgentState)
@@ -18,12 +22,14 @@ chat_graph = StateGraph(AgentState)
 # Add nodes
 chat_graph.add_node("process_chat", process_chat)
 chat_graph.add_node("generate_image", generate_image)
+chat_graph.add_node("scrape_website", scrape_website_node)
 
 # Set the conditional entry point
 chat_graph.set_conditional_entry_point(
-    should_generate_image,
+    route_message,
     {
         "generate_image": "generate_image",
+        "scrape_website": "scrape_website",
         "process_chat": "process_chat",
     },
 )
@@ -31,6 +37,7 @@ chat_graph.set_conditional_entry_point(
 # Add edges
 chat_graph.add_edge("process_chat", END)
 chat_graph.add_edge("generate_image", END)
+chat_graph.add_edge("scrape_website", END)
 
 chat_agent = chat_graph.compile()
 conversation_histories = {}
@@ -55,3 +62,7 @@ def update_conversation_history(chat_id: str, message: str):
     
     # Update the history with the new state from the agent
     conversation_histories[chat_id] = result["messages"]
+
+    # If scraped data exists, add it to the history as a system message
+    if result.get("scraped_data"):
+        conversation_histories[chat_id].append(SystemMessage(content=result["scraped_data"]))
