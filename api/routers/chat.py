@@ -15,32 +15,44 @@ class ChatRequest(BaseModel):
     chat_id: Optional[str] = None
 
 def _message_to_dict(message):
-    response = None
+    message_dict = {}
     if isinstance(message, HumanMessage):
-        response = {"type": "human", "content": message.content}
+        message_dict = {"type": "human", "content": message.content}
     elif isinstance(message, AIMessage):
-        response = {"type": "ai", "content": message.content}
+        message_dict = {"type": "ai", "content": message.content}
         if "image_url" in message.additional_kwargs:
-            response["image_url"] = message.additional_kwargs["image_url"]
-    
-    if response and hasattr(message, 'status'):
-        response['status'] = message.status
-    
-    if response and hasattr(message, 'result'):
-        response['result'] = message.result
+            message_dict["image_url"] = message.additional_kwargs["image_url"]
+    else:
+        # Handle other types if necessary, or return a default
+        return None
+
+    if hasattr(message, 'status'):
+        message_dict['status'] = message.status
+    if hasattr(message, 'result'):
+        message_dict['result'] = message.result
         
-    return response
+    return message_dict
 
 def _dict_to_message(message_dict):
-    if message_dict['type'] == 'human':
-        return HumanMessage(content=message_dict['content'])
-    elif message_dict['type'] == 'ai':
+    msg_type = message_dict.get('type')
+    content = message_dict.get('content')
+
+    if msg_type == 'human':
+        message = HumanMessage(content=content)
+    elif msg_type == 'ai':
         additional_kwargs = {}
         if "image_url" in message_dict:
             additional_kwargs["image_url"] = message_dict["image_url"]
-        return AIMessage(content=message_dict['content'], additional_kwargs=additional_kwargs)
+        message = AIMessage(content=content, additional_kwargs=additional_kwargs)
     else:
         return None
+
+    if 'status' in message_dict:
+        message.status = message_dict['status']
+    if 'result' in message_dict:
+        message.result = message_dict['result']
+        
+    return message
 
 async def run_scraping_and_update(chat_id: str, message_content: str, url: str):
     scraped_data = scrape_website(url)
@@ -52,7 +64,7 @@ async def chat_endpoint(chat_request: ChatRequest, background_tasks: BackgroundT
         # Load existing history from DB
         existing_messages_dicts = await get_messages(chat_request.chat_id)
         if existing_messages_dicts:
-            existing_messages = [_dict_to_message(m) for m in existing_messages_dicts if m]
+            existing_messages = [msg for msg in [_dict_to_message(m) for m in existing_messages_dicts] if msg is not None]
             load_conversation_history(chat_request.chat_id, existing_messages)
     else:
         chat_request.chat_id = str(uuid.uuid4())
