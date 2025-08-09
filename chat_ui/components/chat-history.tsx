@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, type LucideIcon } from "lucide-react";
+import { ChevronRight, History, type LucideIcon } from "lucide-react";
 
 import {
   Collapsible,
@@ -10,15 +10,11 @@ import {
 import {
   SidebarGroup,
   SidebarGroupLabel,
-  SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 
 import * as React from "react";
+import { useEffect } from "react";
 import { MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useGetAllChatsQuery } from "@/store/api";
@@ -39,6 +35,13 @@ interface ChatHistoryProps {
 
 export function ChatHistory({ isCollapsed }: ChatHistoryProps) {
   const { data, isLoading } = useGetAllChatsQuery();
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  useEffect(() => {
+    if (isCollapsed) {
+      setIsOpen(false);
+    }
+  }, [isCollapsed]);
 
   if (isLoading)
     return (
@@ -51,19 +54,38 @@ export function ChatHistory({ isCollapsed }: ChatHistoryProps) {
 
   return (
     <SidebarGroup>
-      <Collapsible className="group/collapsible">
+      <Collapsible
+        className="group/collapsible"
+        open={isOpen}
+        onOpenChange={setIsOpen}
+      >
         <CollapsibleTrigger asChild>
-          <SidebarMenuButton tooltip="History" className="group/history-collapsible">
-            <SidebarGroupLabel className="group-hover/history-collapsible:text-black">History</SidebarGroupLabel>
-            <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+          <SidebarMenuButton
+            tooltip="History"
+            className="group/history-collapsible"
+          >
+            <History className="h-5 w-5" />
+            {!isCollapsed && (
+              <>
+                <SidebarGroupLabel className="group-hover/history-collapsible:text-black">
+                  History
+                </SidebarGroupLabel>
+                <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+              </>
+            )}
           </SidebarMenuButton>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="flex flex-col gap-2 px-2">
+          <div
+            className={cn([
+              "flex flex-col gap-2",
+              isCollapsed ? "px-0" : "px-2",
+            ])}
+          >
             {chats.map((chat, index) =>
               isCollapsed ? (
                 <TooltipProvider key={index}>
-                  <Tooltip delayDuration={0}>
+                  <Tooltip>
                     <TooltipTrigger asChild>
                       <Link
                         href={`/dashboard/chat/${chat.chat_id}`}
@@ -76,12 +98,7 @@ export function ChatHistory({ isCollapsed }: ChatHistoryProps) {
                         <span className="sr-only">{chat.title}</span>
                       </Link>
                     </TooltipTrigger>
-                    <TooltipContent
-                      side="right"
-                      className="flex items-center gap-4"
-                    >
-                      {chat.title}
-                    </TooltipContent>
+                    <TooltipContent side="right">{chat.title}</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               ) : (
@@ -90,7 +107,7 @@ export function ChatHistory({ isCollapsed }: ChatHistoryProps) {
                   href={`/dashboard/chat/${chat.chat_id}`}
                   className={cn(
                     buttonVariants({ variant: "ghost", size: "sm" }),
-                    "justify-start"
+                    "justify-start overflow-hidden"
                   )}
                 >
                   <MessageSquare className="mr-2 h-4 w-4" />
