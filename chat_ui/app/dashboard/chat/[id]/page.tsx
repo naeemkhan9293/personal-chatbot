@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { useState, useEffect } from "react";
 import { useSendMessageMutation, useGetChatHistoryQuery } from "@/store/api";
@@ -6,15 +6,22 @@ import { useParams, useRouter } from "next/navigation";
 import ChatInput from "@/components/chat/ChatInput";
 import ChatMessages from "@/components/chat/ChatMessages";
 import ChatLoading from "@/components/chat/ChatLoading";
+import ChatOptions from "@/components/chat/ChatOption";
 
 export default function Chat() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
-  const [messages, setMessages] = useState<Array<{content: string, type: 'human' | 'ai'}>>([]);
+  const [messages, setMessages] = useState<
+    Array<{ content: string; type: "human" | "ai" }>
+  >([]);
   const [chatId, setChatId] = useState(id === "new" ? null : id);
   const [sendMessage, { isLoading: isSending }] = useSendMessageMutation();
-  const { data: chatHistoryData, refetch, isLoading: isHistoryLoading } = useGetChatHistoryQuery(chatId!, { skip: !chatId });
+  const {
+    data: chatHistoryData,
+    refetch,
+    isLoading: isHistoryLoading,
+  } = useGetChatHistoryQuery(chatId!, { skip: !chatId });
 
   useEffect(() => {
     if (id === "new") {
@@ -28,20 +35,31 @@ export default function Chat() {
 
   useEffect(() => {
     if (chatHistoryData) {
-      setMessages(chatHistoryData.messages as Array<{content: string, type: 'human' | 'ai'}>);
+      setMessages(
+        chatHistoryData.messages as Array<{
+          content: string;
+          type: "human" | "ai";
+        }>
+      );
     }
   }, [chatHistoryData]);
 
   const handleSendMessage = async (message: string) => {
     if (!message.trim()) return;
 
-    const newMessages = [...messages, { content: message, type: "human" as const }];
+    const newMessages = [
+      ...messages,
+      { content: message, type: "human" as const },
+    ];
     setMessages(newMessages);
 
     if (chatId) {
       const { data } = await sendMessage({ message, chat_id: chatId });
       if (data && data.response) {
-        setMessages((prevMessages) => [...prevMessages, data.response as unknown as {content: string, type: 'human' | 'ai'}]);
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          data.response as unknown as { content: string; type: "human" | "ai" },
+        ]);
       }
     } else {
       const { data } = await sendMessage({ message });
@@ -62,6 +80,7 @@ export default function Chat() {
   return (
     <div className="flex h-[calc(100vh-3.5rem)] bg-gray-900 text-white">
       <div className="flex flex-col flex-1">
+        {messages.length === 0 && <ChatOptions />}
         <ChatMessages messages={messages} isLoading={isSending} />
         <ChatInput onSendMessage={handleSendMessage} isLoading={isSending} />
       </div>

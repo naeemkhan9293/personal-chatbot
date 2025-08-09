@@ -15,7 +15,14 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-gray-800 py-2 px-4 flex items-center justify-between border-b border-gray-700 text-white fixed  z-50 h-14 transition-all duration-200 ease-linear w-full md:w-[calc(100vw-250px)]">
+    <header
+      className={cn([
+        "bg-gray-800 py-2 px-4 flex items-center justify-between border-b border-gray-700 text-white fixed  z-50 h-14 transition-all duration-200 ease-linear w-full ",
+        state === "expanded"
+          ? "md:w-[calc(100vw-248px)]"
+          : "md:w-[calc(100vw-40px)]",
+      ])}
+    >
       <SidebarTrigger />
       <Button
         variant="outline"

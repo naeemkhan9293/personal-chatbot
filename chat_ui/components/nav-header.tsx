@@ -16,7 +16,7 @@ export const NavHeader = () => {
         <Image src="/robot.png" alt="logo" fill className="object-contain" />
       </div>
       {state === "expanded" && (
-        <h1 className="font-semibold text-xl">Person Assistance</h1>
+        <h1 className="font-semibold text-3xl">ASSISTANCE</h1>
       )}
     </header>
   );
