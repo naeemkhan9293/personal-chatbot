@@ -9,7 +9,7 @@ export default function DashboardLayout({
   return (
     <div className="relative">
       <Header />
-      <div className="pt-14">
+      <div className="pt-14 ">
         {children}
       </div>
     </div>

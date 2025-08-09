@@ -1,7 +1,7 @@
 from memory.agents_memory import AgentState
 from langgraph.graph import StateGraph, START, END
 from node.process_chat import process_chat
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.messages import HumanMessage
 
 chat_graph = StateGraph(AgentState)
 chat_graph.add_node("process_chat", process_chat)
