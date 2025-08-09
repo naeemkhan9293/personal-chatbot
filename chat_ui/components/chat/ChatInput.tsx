@@ -73,16 +73,18 @@ export default function ChatInput({ onSendMessage, isLoading }: ChatInputProps) 
   }, [activeCommand]);
 
   return (
-    <footer className="bg-gray-800 border-t border-gray-700 py-4 px-6">
+    <footer className="glass-header py-4 px-6 border-t-0 border-b-0">
       <div className="relative">
         {showMenu && (
-          <div className="absolute bottom-full mb-2 w-full rounded-lg bg-gray-700 border border-gray-600 text-white shadow-lg z-10">
+          <div className="absolute bottom-full mb-2 w-full glass-card rounded-lg shadow-2xl z-10">
             <ul>
               {commands.map((command, index) => (
                 <li
                   key={command}
-                  className={`px-4 py-2 cursor-pointer ${
-                    index === focusedIndex ? "bg-gray-600" : ""
+                  className={`px-4 py-2 cursor-pointer rounded-lg transition-all duration-200 ${
+                    index === focusedIndex
+                      ? "bg-primary/20 text-primary"
+                      : "text-foreground hover:bg-white/10"
                   }`}
                   onClick={() => handleOptionClick(command)}
                   onMouseEnter={() => setFocusedIndex(index)}
@@ -108,7 +110,7 @@ export default function ChatInput({ onSendMessage, isLoading }: ChatInputProps) 
               placeholder={
                 activeCommand ? "" : "Type your message or / for commands"
               }
-              className="pr-16 rounded-lg bg-gray-700 border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500 w-full"
+              className="glass-intense pr-16 rounded-lg text-foreground placeholder:text-muted-foreground focus:ring-primary/50 focus:border-primary/50 w-full border-0 resize-none"
               value={input}
               onChange={handleInputChange}
               onKeyDown={(e) => {
@@ -139,7 +141,7 @@ export default function ChatInput({ onSendMessage, isLoading }: ChatInputProps) 
             />
             <Button
               type="submit"
-              className="absolute top-1/2 right-4 -translate-y-1/2 bg-blue-600 hover:bg-blue-700"
+              className="glass-intense absolute top-1/2 right-4 -translate-y-1/2 bg-primary/80 hover:bg-primary text-primary-foreground border-0 disabled:opacity-50"
               disabled={isLoading}
             >
               <FaPaperPlane className="w-5 h-5" />

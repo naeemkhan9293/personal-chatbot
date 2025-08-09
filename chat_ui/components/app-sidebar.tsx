@@ -30,9 +30,9 @@ import { ChatHistory } from "./chat-history";
 // This is sample data.
 const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    name: "Assistant User",
+    email: "user@assistant.com",
+    avatar: "/robot.png",
   },
   teams: [
     {

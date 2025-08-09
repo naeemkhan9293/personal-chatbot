@@ -27,16 +27,19 @@ const data = [
 
 export default function ChatOptions() {
   return (
-    <div className="flex items-center justify-center flex-wrap h-full gap-2 p-2">
+    <div className="flex items-center justify-center flex-wrap h-full gap-4 p-6">
       {data.map((item, index) => (
-        <Link href={`/dashboard/chat/new?${item.param}`} passHref>
-          <Card
-            key={index}
-            className="bg-gray-700 rounded-lg p-4 text-white  gap-3"
-          >
-            <item.icon className="h-5 w-5" />
-            <p className="text-sm">{item.title}</p>
-            <p className="text-xs text-white">{item.description}</p>
+        <Link href={`/dashboard/chat/new?${item.param}`} passHref key={index}>
+          <Card className="glass-intense p-6 text-foreground gap-3 hover:scale-105 transition-all duration-300 cursor-pointer group border-0 glass-shimmer">
+            <div className="flex flex-col items-center text-center space-y-3">
+              <div className="glass-card p-3 rounded-full glass-float">
+                <item.icon className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">{item.title}</p>
+                <p className="text-xs text-muted-foreground mt-1">{item.description}</p>
+              </div>
+            </div>
           </Card>
         </Link>
       ))}

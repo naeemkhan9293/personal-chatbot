@@ -67,7 +67,7 @@ export function ChatHistory({ isCollapsed }: ChatHistoryProps) {
             <History className="h-5 w-5" />
             {!isCollapsed && (
               <>
-                <SidebarGroupLabel className="group-hover/history-collapsible:text-black">
+                <SidebarGroupLabel className="group-hover/history-collapsible:text-primary">
                   History
                 </SidebarGroupLabel>
                 <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
@@ -91,7 +91,7 @@ export function ChatHistory({ isCollapsed }: ChatHistoryProps) {
                         href={`/dashboard/chat/${chat.chat_id}`}
                         className={cn(
                           buttonVariants({ variant: "ghost", size: "icon" }),
-                          "h-9 w-9"
+                          "h-9 w-9 glass-button border-0 hover:bg-transparent"
                         )}
                       >
                         <MessageSquare className="h-4 w-4" />
@@ -107,7 +107,7 @@ export function ChatHistory({ isCollapsed }: ChatHistoryProps) {
                   href={`/dashboard/chat/${chat.chat_id}`}
                   className={cn(
                     buttonVariants({ variant: "ghost", size: "sm" }),
-                    "justify-start overflow-hidden"
+                    "justify-start overflow-hidden glass-button border-0 hover:bg-transparent"
                   )}
                 >
                   <MessageSquare className="mr-2 h-4 w-4" />

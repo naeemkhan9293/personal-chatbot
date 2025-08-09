@@ -26,19 +26,19 @@ export default function ChatMessages({ messages, isLoading }: ChatMessagesProps)
   }, [messages, isLoading]);
 
   return (
-    <main className="flex-1 overflow-y-auto p-6">
+    <main className="flex-1 overflow-y-auto p-6 bg-transparent">
       <div className="space-y-4">
         {messages.map((message, index) => (
           <ChatMessage key={index} message={message} />
         ))}
         {isLoading && (
           <div className="flex items-start gap-4">
-            <div className="rounded-full bg-gray-700 w-8 h-8 flex items-center justify-center">
-              <FaRobot className="w-5 h-5 text-gray-400" />
+            <div className="rounded-full glass-intense w-8 h-8 flex items-center justify-center glass-float">
+              <FaRobot className="w-5 h-5 text-primary" />
             </div>
-            <div className="bg-gray-700 rounded-lg p-4 max-w-[75%] flex items-center gap-2">
+            <div className="glass-intense rounded-lg p-4 max-w-[75%] flex items-center gap-2 glass-shimmer">
               <ChatLoading className="h-5 w-5" />
-              <span>thinking...</span>
+              <span className="text-muted-foreground">thinking...</span>
             </div>
           </div>
         )}

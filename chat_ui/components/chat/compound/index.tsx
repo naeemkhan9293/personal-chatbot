@@ -110,8 +110,10 @@ export function ChatProvider({ children }: ChatProviderProps) {
 
 function ChatRoot({ children }: { children: ReactNode }) {
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] bg-gray-900 text-white">
-      <div className="flex flex-col flex-1">{children}</div>
+    <div className="flex h-[calc(100vh-3.5rem)] text-foreground">
+      <div className="flex flex-col flex-1 glass-card m-4 overflow-hidden">
+        {children}
+      </div>
     </div>
   );
 }
@@ -130,8 +132,10 @@ function ChatLoadingComponent() {
   const { isHistoryLoading } = useChat();
   if (!isHistoryLoading) return null;
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] bg-gray-900 text-white items-center justify-center">
-      <ChatLoading />
+    <div className="flex h-[calc(100vh-3.5rem)] text-foreground items-center justify-center">
+      <div className="glass-card p-8">
+        <ChatLoading />
+      </div>
     </div>
   );
 }

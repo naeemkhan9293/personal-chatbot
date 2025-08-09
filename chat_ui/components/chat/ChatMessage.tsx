@@ -28,19 +28,21 @@ export default function ChatMessage({ message }: ChatMessageProps) {
   return (
     <div className={`flex items-start gap-4 ${isHuman ? "justify-end" : ""}`}>
       {!isHuman && (
-        <div className="rounded-full bg-gray-700 w-8 h-8 flex items-center justify-center">
-          <FaRobot className="w-5 h-5 text-gray-400" />
+        <div className="rounded-full glass-intense w-8 h-8 flex items-center justify-center">
+          <FaRobot className="w-5 h-5 text-primary" />
         </div>
       )}
       <div
         className={`${
-          isHuman ? "bg-blue-600" : "bg-gray-700"
+          isHuman
+            ? "glass-intense bg-primary/20 border-primary/30"
+            : "glass-intense"
         } rounded-lg p-4 max-w-[75%] relative group`}
       >
         {message.status && (
-          <div className="absolute top-2 right-10 text-white">
+          <div className="absolute top-2 right-10 text-foreground">
             {message.status === "processing" && (
-              <FaSpinner className="animate-spin h-5 w-5" />
+              <FaSpinner className="animate-spin h-5 w-5 text-primary" />
             )}
             {message.status === "complete" && (
               <FaCheckCircle className="h-5 w-5 text-green-500" />
@@ -49,7 +51,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
         )}
         <button
           onClick={() => handleCopy(message.content)}
-          className="absolute top-2 right-2 bg-gray-800 bg-opacity-50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+          className="glass-button absolute top-2 right-2 text-foreground p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 border-0"
         >
           {copied ? (
             <Check className="h-5 w-5 text-green-500" />
@@ -66,7 +68,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
                 <div className="relative">
                   <button
                     onClick={() => handleCopy(String(children))}
-                    className="absolute top-2 right-2 bg-gray-800 bg-opacity-50 text-white p-2 rounded-full"
+                    className="glass-button absolute top-2 right-2 text-foreground p-2 rounded-full border-0"
                   >
                     {copied ? (
                       <Check className="h-5 w-5 text-green-500" />
@@ -102,7 +104,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
             />
             <button
               onClick={() => downloadImage(message.image_url!)}
-              className="absolute top-2 right-2 bg-gray-800 bg-opacity-50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              className="glass-button absolute top-2 right-2 text-foreground p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 border-0"
             >
               <Download className="h-5 w-5" />
             </button>
@@ -110,8 +112,8 @@ export default function ChatMessage({ message }: ChatMessageProps) {
         )}
       </div>
       {isHuman && (
-        <div className="rounded-full bg-gray-700 w-8 h-8 flex items-center justify-center">
-          <FaUser className="w-5 h-5 text-gray-400" />
+        <div className="rounded-full glass-intense w-8 h-8 flex items-center justify-center">
+          <FaUser className="w-5 h-5 text-primary" />
         </div>
       )}
     </div>
