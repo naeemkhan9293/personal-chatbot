@@ -4,15 +4,22 @@ from langchain_core.messages import HumanMessage, AIMessage
 import datetime
 
 def _message_to_dict(message):
+    message_dict = {}
     if isinstance(message, HumanMessage):
-        return {"type": "human", "content": message.content}
+        message_dict = {"type": "human", "content": message.content}
     elif isinstance(message, AIMessage):
         message_dict = {"type": "ai", "content": message.content}
         if "image_url" in message.additional_kwargs:
             message_dict["image_url"] = message.additional_kwargs["image_url"]
-        return message_dict
     else:
-        return {"type": "unknown", "content": str(message)}
+        message_dict = {"type": "unknown", "content": str(message)}
+
+    if hasattr(message, 'status'):
+        message_dict['status'] = message.status
+    if hasattr(message, 'result'):
+        message_dict['result'] = message.result
+        
+    return message_dict
 
 async def store_messages(chat_id: str, messages: list):
     """
@@ -34,6 +41,28 @@ async def store_messages(chat_id: str, messages: list):
         },
         upsert=True
     )
+
+async def update_message_status(chat_id: str, message_content: str, status: str, result: str = None):
+    db = get_database()
+    collection = db.conversations
+    
+    query = {
+        "_id": chat_id,
+        "messages": {
+            "$elemMatch": {
+                "content": message_content,
+            }
+        }
+    }
+    
+    update = {
+        "$set": {
+            "messages.$.status": status,
+            "messages.$.result": result
+        }
+    }
+    
+    await collection.update_one(query, update)
 
 async def get_messages(chat_id: str) -> list:
     """

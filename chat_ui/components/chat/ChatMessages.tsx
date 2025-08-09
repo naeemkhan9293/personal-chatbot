@@ -6,6 +6,7 @@ import ChatLoading from "./ChatLoading";
 interface Message {
   content: string;
   type: "human" | "ai";
+  status?: "processing" | "complete";
 }
 
 interface ChatMessagesProps {

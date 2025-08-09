@@ -1,46 +1,41 @@
 import time
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+from services.parser.html_parser import parse_html_to_text
 
 def scrape_upwork_profile(url: str) -> str:
     """
-    Scrapes an Upwork profile by attaching to an existing user-controlled Chrome browser.
+    Scrapes and parses an Upwork profile, returning clean text.
     """
-    options = Options()
-    # This connects to a Chrome browser instance you have already opened with a debugging port
-    options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
-    
-    driver = webdriver.Chrome(options=options)
-    
+    driver = None
     try:
+        options = uc.ChromeOptions()
+        driver = uc.Chrome(options=options, use_subprocess=True, version_main=138)
+        
+        print("Navigating to URL...")
         driver.get(url)
-        # The user is expected to have the correct page open.
-        # The script will wait for the necessary elements to appear.
-        wait = WebDriverWait(driver, 45)
         
-        title_selector = "h1"
-        description_selector = "[data-qa='project-description']"
+        wait = WebDriverWait(driver, 60)
         
-        title_element = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, title_selector)))
-        title = title_element.text
-        
-        description_element = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, description_selector)))
-        description = description_element.text
-        
-        scraped_data = f"Title: {title}\n\nDescription:\n{description}"
-        
-        return scraped_data
+        print("Waiting for Cloudflare challenge to complete...")
+        wait.until_not(EC.title_contains("Just a moment..."))
+        print("Cloudflare challenge passed. Capturing full HTML.")
+
+        html_content = driver.page_source
+        return parse_html_to_text(html_content)
         
     except TimeoutException:
-        return "Timed out waiting for page elements. Please ensure you are on the correct Upwork page before running the script."
+        print("Timeout occurred. Parsing partial HTML.")
+        if driver:
+            partial_html = driver.page_source
+            return parse_html_to_text(partial_html)
+        return "Timed out and could not retrieve any HTML."
     except Exception as e:
-        if "invalid session id" in str(e):
-            return "Could not connect to the browser. Please ensure you have launched Chrome with the debugging port open."
         return f"An error occurred while scraping: {e}"
     finally:
-        # We don't quit the driver, as it's attached to the user's browser
-        pass
+        if driver:
+            print("Closing browser.")
+            driver.quit()

@@ -1,4 +1,4 @@
-import { FaRobot, FaUser } from "react-icons/fa";
+import { FaRobot, FaUser, FaSpinner, FaCheckCircle } from "react-icons/fa";
 import { Download, Copy, Check } from "lucide-react";
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -12,6 +12,7 @@ interface ChatMessageProps {
     content: string;
     type: "human" | "ai";
     image_url?: string;
+    status?: "processing" | "complete";
   };
 }
 
@@ -36,6 +37,16 @@ export default function ChatMessage({ message }: ChatMessageProps) {
           isHuman ? "bg-blue-600" : "bg-gray-700"
         } rounded-lg p-4 max-w-[75%] relative group`}
       >
+        {message.status && (
+          <div className="absolute top-2 right-10 text-white">
+            {message.status === "processing" && (
+              <FaSpinner className="animate-spin h-5 w-5" />
+            )}
+            {message.status === "complete" && (
+              <FaCheckCircle className="h-5 w-5 text-green-500" />
+            )}
+          </div>
+        )}
         <button
           onClick={() => handleCopy(message.content)}
           className="absolute top-2 right-2 bg-gray-800 bg-opacity-50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
