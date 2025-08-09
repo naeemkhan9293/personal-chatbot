@@ -7,11 +7,11 @@ interface CommandBadgeProps {
 const commandStyles = {
   "generate image": {
     label: "Image",
-    bgColor: "bg-blue-500",
+    bgColor: "bg-blue-800",
   },
   "scrap website": {
     label: "Scrap",
-    bgColor: "bg-green-500",
+    bgColor: "bg-green-800",
   },
 };
 
@@ -20,7 +20,7 @@ export default function CommandBadge({ command }: CommandBadgeProps) {
 
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white ${bgColor}`}
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-medium text-white ${bgColor}`}
     >
       {label}
     </span>
