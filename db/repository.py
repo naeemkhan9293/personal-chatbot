@@ -45,7 +45,7 @@ async def store_messages(chat_id: str, messages: list):
 async def update_message_status(chat_id: str, message_content: str, status: str, result: str = None):
     db = get_database()
     collection = db.conversations
-    
+
     query = {
         "_id": chat_id,
         "messages": {
@@ -54,14 +54,18 @@ async def update_message_status(chat_id: str, message_content: str, status: str,
             }
         }
     }
-    
-    update = {
-        "$set": {
-            "messages.$.status": status,
-            "messages.$.result": result
-        }
+
+    update_fields = {
+        "messages.$.status": status
     }
-    
+
+    # If result is provided, update the content with the result
+    if result is not None:
+        update_fields["messages.$.content"] = result
+        update_fields["messages.$.result"] = result
+
+    update = {"$set": update_fields}
+
     await collection.update_one(query, update)
 
 async def get_messages(chat_id: str) -> list:

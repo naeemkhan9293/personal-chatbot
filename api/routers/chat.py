@@ -54,9 +54,20 @@ def _dict_to_message(message_dict):
         
     return message
 
-async def run_scraping_and_update(chat_id: str, message_content: str, url: str):
-    scraped_data = scrape_website(url)
-    await update_message_status(chat_id, message_content, "complete", scraped_data)
+async def run_scraping_and_update(chat_id: str, ai_message_content: str, url: str):
+    try:
+        scraped_data = scrape_website(url)
+
+        # Update the AI message content to include scraped data and mark as complete
+        updated_content = f"✅ Successfully scraped website: {url}\n\n**Scraped Content:**\n\n{scraped_data}"
+
+        # Update the message status and content
+        await update_message_status(chat_id, ai_message_content, "complete", updated_content)
+
+    except Exception as e:
+        # Handle scraping errors
+        error_content = f"❌ Failed to scrape website: {url}\n\n**Error:** {str(e)}"
+        await update_message_status(chat_id, ai_message_content, "complete", error_content)
 
 @router.post("/")
 async def chat_endpoint(chat_request: ChatRequest, background_tasks: BackgroundTasks):
@@ -71,23 +82,25 @@ async def chat_endpoint(chat_request: ChatRequest, background_tasks: BackgroundT
 
     if chat_request.message.startswith("/scrape website"):
         url = chat_request.message.replace("/scrape website", "").strip()
-        
-        # Create a new HumanMessage with a "processing" status
-        processing_message = HumanMessage(content=chat_request.message)
-        processing_message.status = "processing"
-        
-        # Update conversation history
+
+        # Add the human message to conversation history
         conversation_history = get_conversation_history(chat_request.chat_id)
-        conversation_history.append(processing_message)
-        
+        human_message = HumanMessage(content=chat_request.message)
+        conversation_history.append(human_message)
+
+        # Create an AI message with "processing" status
+        ai_message_content = f"🔄 Scraping website: {url}\n\nPlease wait while I extract the content..."
+        ai_response = AIMessage(content=ai_message_content)
+        ai_response.status = "processing"
+        conversation_history.append(ai_response)
+
         # Store the updated history
         await store_messages(chat_request.chat_id, conversation_history)
-        
-        # Add the scraping task to background
-        background_tasks.add_task(run_scraping_and_update, chat_request.chat_id, chat_request.message, url)
-        
-        # Return an immediate response
-        ai_response = AIMessage(content=f"Scraping for {url} has started in the background.")
+
+        # Add the scraping task to background - pass AI message content for status updates
+        background_tasks.add_task(run_scraping_and_update, chat_request.chat_id, ai_message_content, url)
+
+        # Return the AI response with processing status
         return {"response": _message_to_dict(ai_response), "chat_id": chat_request.chat_id}
 
     update_conversation_history(chat_request.chat_id, chat_request.message)

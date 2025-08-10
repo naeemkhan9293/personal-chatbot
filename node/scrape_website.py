@@ -30,16 +30,3 @@ def scrape_website_node(state: AgentState) -> AgentState:
     
     return state
 
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        url_to_scrape = sys.argv[1]
-        print(f"Scraping website: {url_to_scrape}")
-        if "upwork.com" in url_to_scrape:
-            content = scrape_upwork_profile(url_to_scrape)
-        else:
-            content = scrape_website(url_to_scrape)
-        print("--- SCRAPED CONTENT ---")
-        print(content)
-        print("--- END SCRAPED CONTENT ---")
-    else:
-        print("Usage: python scrape_website.py <URL>")

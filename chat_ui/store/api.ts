@@ -5,7 +5,7 @@ export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: 'http://127.0.0.1:8000/' }),
   tagTypes: ['Chats'],
   endpoints: (builder) => ({
-    sendMessage: builder.mutation<{response: {content: string, type: string}, chat_id: string}, {message: string, chat_id?: string}>({
+    sendMessage: builder.mutation<{response: {content: string, type: string, status?: string}, chat_id: string}, {message: string, chat_id?: string}>({
       query: (body) => ({
         url: 'chat',
         method: 'POST',
@@ -26,7 +26,7 @@ export const api = createApi({
         }
       },
     }),
-    getChatHistory: builder.query<{messages: Array<{content: string, type: string}>}, string>({
+    getChatHistory: builder.query<{messages: Array<{content: string, type: string, status?: string}>}, string>({
       query: (chat_id) => `chat/${chat_id}`,
     }),
     getAllChats: builder.query<{chats: Array<{chat_id: string, title: string}>}, void>({
