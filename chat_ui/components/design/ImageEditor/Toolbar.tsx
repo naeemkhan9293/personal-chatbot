@@ -19,9 +19,11 @@ import {
   Upload,
   Trash2,
   Copy,
-  Layers
+  Layers,
+  Hand,
+  Move
 } from 'lucide-react';
-import { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 
 const Toolbar = () => {
   const {
@@ -37,13 +39,18 @@ const Toolbar = () => {
     strokeColor,
     setStrokeColor,
     strokeWidth,
-    setStrokeWidth
+    setStrokeWidth,
+    toolbarPosition,
+    setToolbarPosition
   } = useImageEditor();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   const tools: { id: Tool; icon: React.ReactNode; label: string }[] = [
     { id: 'select', icon: <MousePointer2 size={18} />, label: 'Select' },
+    { id: 'hand', icon: <Hand size={18} />, label: 'Hand' },
     { id: 'rectangle', icon: <Square size={18} />, label: 'Rectangle' },
     { id: 'circle', icon: <Circle size={18} />, label: 'Circle' },
     { id: 'text', icon: <Type size={18} />, label: 'Text' },
@@ -140,10 +147,61 @@ const Toolbar = () => {
     }
   };
 
+  // Handle toolbar dragging
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget || (e.target as HTMLElement).classList.contains('drag-handle')) {
+      setIsDragging(true);
+      setDragOffset({
+        x: e.clientX - toolbarPosition.x,
+        y: e.clientY - toolbarPosition.y
+      });
+    }
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (isDragging) {
+      setToolbarPosition({
+        x: e.clientX - dragOffset.x,
+        y: e.clientY - dragOffset.y
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Add global mouse event listeners for dragging
+  React.useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, dragOffset]);
+
   return (
-    <div className="flex flex-wrap items-center gap-2 p-4 mb-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl shadow-lg">
+    <div
+      className="fixed z-50 flex flex-wrap items-center gap-2 p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl shadow-lg cursor-move select-none"
+      style={{
+        left: toolbarPosition.x,
+        top: toolbarPosition.y,
+        maxWidth: '90vw'
+      }}
+      onMouseDown={handleMouseDown}
+    >
+      {/* Drag Handle */}
+      <div className="drag-handle flex items-center justify-center w-6 h-6 text-white/50 hover:text-white/80 cursor-grab active:cursor-grabbing">
+        <Move size={14} />
+      </div>
+
+      <Separator orientation="vertical" className="h-8 bg-white/20" />
+
       {/* Tool Selection */}
-      <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1">
+      <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1" onMouseDown={(e) => e.stopPropagation()}>
         {tools.map((tool) => (
           <Toggle
             key={tool.id}
@@ -160,7 +218,7 @@ const Toolbar = () => {
       <Separator orientation="vertical" className="h-8 bg-white/20" />
 
       {/* Color Controls */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2" onMouseDown={(e) => e.stopPropagation()}>
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -219,7 +277,7 @@ const Toolbar = () => {
       {/* Size Controls */}
       {(activeTool === 'brush' || activeTool === 'eraser') && (
         <>
-          <div className="flex items-center gap-2 min-w-[120px]">
+          <div className="flex items-center gap-2 min-w-[120px]" onMouseDown={(e) => e.stopPropagation()}>
             <Brush size={16} className="text-white/70" />
             <Slider
               value={[brushSize]}
@@ -263,7 +321,7 @@ const Toolbar = () => {
       )}
 
       {(activeTool === 'rectangle' || activeTool === 'circle') && (
-        <div className="flex items-center gap-2 min-w-[120px]">
+        <div className="flex items-center gap-2 min-w-[120px]" onMouseDown={(e) => e.stopPropagation()}>
           <div className="w-4 h-0.5 bg-white/70 rounded" />
           <Slider
             value={[strokeWidth]}
@@ -280,7 +338,7 @@ const Toolbar = () => {
       <Separator orientation="vertical" className="h-8 bg-white/20" />
 
       {/* Action Buttons */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1" onMouseDown={(e) => e.stopPropagation()}>
         <input
           ref={fileInputRef}
           type="file"

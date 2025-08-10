@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 import * as fabric from 'fabric';
 
-export type Tool = 'select' | 'rectangle' | 'circle' | 'text' | 'brush' | 'eraser' | 'image';
+export type Tool = 'select' | 'rectangle' | 'circle' | 'text' | 'brush' | 'eraser' | 'image' | 'hand';
 
 // Define the shape of the context state
 interface ImageEditorContextType {
@@ -23,6 +23,16 @@ interface ImageEditorContextType {
   setStrokeWidth: (width: number) => void;
   isDrawing: boolean;
   setIsDrawing: (drawing: boolean) => void;
+  // Canvas viewport state
+  zoom: number;
+  setZoom: (zoom: number) => void;
+  panX: number;
+  setPanX: (x: number) => void;
+  panY: number;
+  setPanY: (y: number) => void;
+  // Toolbar position
+  toolbarPosition: { x: number; y: number };
+  setToolbarPosition: (position: { x: number; y: number }) => void;
 }
 
 // Create the context with a default value
@@ -43,6 +53,14 @@ export const ImageEditorProvider = ({ children }: ImageEditorProviderProps) => {
   const [strokeWidth, setStrokeWidth] = useState(2);
   const [isDrawing, setIsDrawing] = useState(false);
 
+  // Canvas viewport state
+  const [zoom, setZoom] = useState(1);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
+
+  // Toolbar position
+  const [toolbarPosition, setToolbarPosition] = useState({ x: 500, y: 56 });
+
   return (
     <ImageEditorContext.Provider value={{
       canvas,
@@ -60,7 +78,15 @@ export const ImageEditorProvider = ({ children }: ImageEditorProviderProps) => {
       strokeWidth,
       setStrokeWidth,
       isDrawing,
-      setIsDrawing
+      setIsDrawing,
+      zoom,
+      setZoom,
+      panX,
+      setPanX,
+      panY,
+      setPanY,
+      toolbarPosition,
+      setToolbarPosition
     }}>
       {children}
     </ImageEditorContext.Provider>

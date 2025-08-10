@@ -1,16 +1,16 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import * as fabric from 'fabric';
 import { useImageEditor } from './context';
 
-interface CanvasProps {
-  width: number;
-  height: number;
-}
-
-const Canvas = ({ width, height }: CanvasProps) => {
+const Canvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 });
+
   const {
     canvas,
     setCanvas,
@@ -19,8 +19,117 @@ const Canvas = ({ width, height }: CanvasProps) => {
     brushColor,
     fillColor,
     strokeColor,
-    strokeWidth
+    strokeWidth,
+    zoom,
+    setZoom,
+    panX,
+    setPanX,
+    panY,
+    setPanY
   } = useImageEditor();
+
+  // Handle window resize to make canvas fullscreen
+  useEffect(() => {
+    const handleResize = () => {
+      setDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Handle wheel events for zooming
+  const handleWheel = useCallback((e: WheelEvent) => {
+    e.preventDefault();
+
+    if (e.ctrlKey || e.metaKey) {
+      // Zoom
+      const delta = e.deltaY > 0 ? 0.9 : 1.1;
+      const newZoom = Math.max(0.1, Math.min(5, zoom * delta));
+      setZoom(newZoom);
+
+      if (canvas) {
+        canvas.setZoom(newZoom);
+        canvas.renderAll();
+      }
+    } else {
+      // Pan
+      setPanX(panX - e.deltaX);
+      setPanY(panY - e.deltaY);
+
+      if (canvas) {
+        canvas.relativePan(new fabric.Point(-e.deltaX, -e.deltaY));
+      }
+    }
+  }, [canvas, zoom, setZoom, panX, setPanX, panY, setPanY]);
+
+  // Handle panning with space + drag or hand tool
+  const handleMouseDown = useCallback((e: MouseEvent) => {
+    if (activeTool === 'hand' || e.button === 1) {
+      setIsPanning(true);
+      setLastPanPoint({ x: e.clientX, y: e.clientY });
+      e.preventDefault();
+    }
+  }, [activeTool]);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (isPanning) {
+      const deltaX = e.clientX - lastPanPoint.x;
+      const deltaY = e.clientY - lastPanPoint.y;
+
+      setPanX(panX + deltaX);
+      setPanY(panY + deltaY);
+
+      if (canvas) {
+        canvas.relativePan(new fabric.Point(deltaX, deltaY));
+      }
+
+      setLastPanPoint({ x: e.clientX, y: e.clientY });
+    }
+  }, [isPanning, lastPanPoint, canvas, panX, setPanX, panY, setPanY]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsPanning(false);
+  }, []);
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Space key for temporary hand tool
+      if (e.code === 'Space' && !e.repeat) {
+        e.preventDefault();
+        document.body.style.cursor = 'grab';
+      }
+
+      // Zoom shortcuts
+      if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+        e.preventDefault();
+        setZoom(1);
+        if (canvas) {
+          canvas.setZoom(1);
+          canvas.renderAll();
+        }
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        document.body.style.cursor = 'default';
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [canvas, setZoom]);
 
   // Update drawing mode when tool changes
   useEffect(() => {
@@ -53,10 +162,9 @@ const Canvas = ({ width, height }: CanvasProps) => {
         (canvas.freeDrawingBrush as any).globalCompositeOperation = 'source-over';
       }
     }
-  }, [canvas, activeTool, brushSize, brushColor]);
+  }, [canvas, activeTool, brushSize, brushColor, fillColor, strokeColor, strokeWidth]);
 
   const setupCanvasEvents = useCallback((canvas: fabric.Canvas) => {
-
     // Handle mouse events for shape creation
     let isDown = false;
     let origX = 0;
@@ -66,7 +174,7 @@ const Canvas = ({ width, height }: CanvasProps) => {
     const onMouseDown = (o: any) => {
       // Get current tool from the canvas data or use a closure
       const currentTool = (canvas as any).activeTool || activeTool;
-      if (currentTool === 'select' || currentTool === 'brush' || currentTool === 'eraser') return;
+      if (currentTool === 'select' || currentTool === 'brush' || currentTool === 'eraser' || currentTool === 'hand') return;
 
       isDown = true;
       const pointer = canvas.getPointer(o.e);
@@ -145,25 +253,28 @@ const Canvas = ({ width, height }: CanvasProps) => {
       canvas.off('mouse:move', onMouseMove);
       canvas.off('mouse:up', onMouseUp);
     };
-  }, []);
+  }, [activeTool, fillColor, strokeColor, strokeWidth]);
 
-  // Initialize canvas only once
+  // Initialize canvas when dimensions are available
   useEffect(() => {
-    if (canvasRef.current) {
-      const canvas = new fabric.Canvas(canvasRef.current, {
-        width,
-        height,
+    if (canvasRef.current && dimensions.width > 0 && dimensions.height > 0) {
+      const fabricCanvas = new fabric.Canvas(canvasRef.current, {
+        width: dimensions.width,
+        height: dimensions.height,
         backgroundColor: 'transparent',
       });
 
-      setCanvas(canvas);
+      // Enable viewport transform for panning and zooming
+      fabricCanvas.selection = true;
+
+      setCanvas(fabricCanvas);
 
       // Clean up on unmount
       return () => {
-        canvas.dispose();
+        fabricCanvas.dispose();
       };
     }
-  }, [width, height, setCanvas]);
+  }, [dimensions, setCanvas]);
 
   // Setup events once when canvas is created
   useEffect(() => {
@@ -173,26 +284,67 @@ const Canvas = ({ width, height }: CanvasProps) => {
     }
   }, [canvas, setupCanvasEvents]);
 
+  // Add event listeners for mouse and wheel events
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    container.addEventListener('mousedown', handleMouseDown);
+    container.addEventListener('mousemove', handleMouseMove);
+    container.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+      container.removeEventListener('mousedown', handleMouseDown);
+      container.removeEventListener('mousemove', handleMouseMove);
+      container.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [handleWheel, handleMouseDown, handleMouseMove, handleMouseUp]);
+
   return (
-    <div className="relative">
-      {/* Glassy background with grid pattern */}
+    <div
+      ref={containerRef}
+      className="w-[calc(100vh-250px)] overflow-hidden"
+      style={{
+        background: `
+          radial-gradient(circle at 25% 25%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+          radial-gradient(circle at 75% 75%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+          linear-gradient(135deg, #667eea 0%, #764ba2 100%)
+        `,
+        cursor: activeTool === 'hand' ? 'grab' : isPanning ? 'grabbing' : 'default'
+      }}
+    >
+      {/* Infinite grid background */}
       <div
-        className="absolute inset-0 rounded-lg backdrop-blur-sm bg-white/10 border border-white/20 shadow-lg"
+        className="absolute inset-0"
         style={{
-          width,
-          height,
           backgroundImage: `
             linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
             linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
           `,
-          backgroundSize: '20px 20px',
+          backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
+          backgroundPosition: `${panX}px ${panY}px`,
+          transform: `scale(${zoom})`,
+          transformOrigin: '0 0'
         }}
       />
+
+      {/* Canvas */}
       <canvas
         ref={canvasRef}
-        className="relative z-10 rounded-lg"
-        style={{ display: 'block' }}
+        className="absolute top-0 left-0 z-10"
+        style={{
+          display: 'block',
+          width: dimensions.width,
+          height: dimensions.height
+        }}
       />
+
+      {/* Zoom indicator */}
+      <div className="fixed bottom-4 right-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-lg text-sm">
+        {Math.round(zoom * 100)}%
+      </div>
     </div>
   );
 };
