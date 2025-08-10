@@ -53,16 +53,22 @@ def update_conversation_history(chat_id: str, message: str):
     if chat_id not in conversation_histories:
         conversation_histories[chat_id] = []
     
-    # Append the new human message
     current_history = conversation_histories.get(chat_id, [])
     current_history.append(HumanMessage(content=message))
     
-    # Invoke the chat agent
-    result = chat_agent.invoke({"messages": current_history})
+    # Invoke the chat agent with the chat_id
+    result = chat_agent.invoke({"messages": current_history, "chat_id": chat_id})
     
-    # Update the history with the new state from the agent
     conversation_histories[chat_id] = result["messages"]
 
-    # If scraped data exists, add it to the history as a system message
     if result.get("scraped_data"):
         conversation_histories[chat_id].append(SystemMessage(content=result["scraped_data"]))
+
+def update_conversation_with_scraped_data(chat_id: str, scraped_text: str):
+    """
+    Updates the conversation history with the scraped data.
+    """
+    if chat_id in conversation_histories:
+        conversation_histories[chat_id].append(SystemMessage(content=scraped_text))
+    else:
+        print(f"Chat ID {chat_id} not found in conversation histories.")
