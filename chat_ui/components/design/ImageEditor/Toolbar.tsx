@@ -7,6 +7,7 @@ import { Slider } from '@/components/ui/slider';
 import { Toggle } from '@/components/ui/toggle';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   MousePointer2,
   Square,
@@ -184,54 +185,75 @@ const Toolbar = () => {
   }, [isDragging, dragOffset]);
 
   return (
-    <div
-      className="fixed z-50 flex flex-wrap items-center gap-2 p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl shadow-lg cursor-move select-none"
-      style={{
-        left: toolbarPosition.x,
-        top: toolbarPosition.y,
-        maxWidth: '90vw'
-      }}
-      onMouseDown={handleMouseDown}
-    >
-      {/* Drag Handle */}
-      <div className="drag-handle flex items-center justify-center w-6 h-6 text-white/50 hover:text-white/80 cursor-grab active:cursor-grabbing">
-        <Move size={14} />
-      </div>
+    <TooltipProvider>
+      <div
+        className="fixed z-50 flex flex-wrap items-center gap-2 p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl shadow-lg cursor-move select-none"
+        style={{
+          left: toolbarPosition.x,
+          top: toolbarPosition.y,
+          maxWidth: '90vw'
+        }}
+        onMouseDown={handleMouseDown}
+      >
+        {/* Drag Handle */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="drag-handle flex items-center justify-center w-6 h-6 text-white/50 hover:text-white/80 cursor-grab active:cursor-grabbing">
+              <Move size={14} />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Drag to move toolbar</p>
+          </TooltipContent>
+        </Tooltip>
 
-      <Separator orientation="vertical" className="h-8 bg-white/20" />
+        <Separator orientation="vertical" className="h-8 bg-white/20" />
 
-      {/* Tool Selection */}
-      <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1" onMouseDown={(e) => e.stopPropagation()}>
-        {tools.map((tool) => (
-          <Toggle
-            key={tool.id}
-            pressed={activeTool === tool.id}
-            onPressedChange={() => handleToolSelect(tool.id)}
-            className="h-10 w-10 data-[state=on]:bg-white/20 data-[state=on]:text-white hover:bg-white/10"
-            aria-label={tool.label}
-          >
-            {tool.icon}
-          </Toggle>
-        ))}
-      </div>
+        {/* Tool Selection */}
+        <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1" onMouseDown={(e) => e.stopPropagation()}>
+          {tools.map((tool) => (
+            <Tooltip key={tool.id}>
+              <TooltipTrigger asChild>
+                <Toggle
+                  pressed={activeTool === tool.id}
+                  onPressedChange={() => handleToolSelect(tool.id)}
+                  className="h-10 w-10 data-[state=on]:bg-white/20 data-[state=on]:text-white hover:bg-white/10"
+                  aria-label={tool.label}
+                >
+                  {tool.icon}
+                </Toggle>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{tool.label}</p>
+              </TooltipContent>
+            </Tooltip>
+          ))}
+        </div>
 
       <Separator orientation="vertical" className="h-8 bg-white/20" />
 
       {/* Color Controls */}
       <div className="flex items-center gap-2" onMouseDown={(e) => e.stopPropagation()}>
         <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-10 w-16 p-1 bg-white/5 border-white/20 hover:bg-white/10"
-            >
-              <div
-                className="w-full h-full rounded border border-white/30"
-                style={{ backgroundColor: fillColor }}
-              />
-            </Button>
-          </PopoverTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-10 w-16 p-1 bg-white/5 border-white/20 hover:bg-white/10"
+                >
+                  <div
+                    className="w-full h-full rounded border border-white/30"
+                    style={{ backgroundColor: fillColor }}
+                  />
+                </Button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Fill Color</p>
+            </TooltipContent>
+          </Tooltip>
           <PopoverContent className="w-64 bg-black/80 backdrop-blur-md border-white/20">
             <div className="space-y-3">
               <label className="text-sm font-medium text-white">Fill Color</label>
@@ -246,18 +268,25 @@ const Toolbar = () => {
         </Popover>
 
         <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-10 w-16 p-1 bg-white/5 border-white/20 hover:bg-white/10"
-            >
-              <div
-                className="w-full h-full rounded border-2"
-                style={{ borderColor: strokeColor, backgroundColor: 'transparent' }}
-              />
-            </Button>
-          </PopoverTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-10 w-16 p-1 bg-white/5 border-white/20 hover:bg-white/10"
+                >
+                  <div
+                    className="w-full h-full rounded border-2"
+                    style={{ borderColor: strokeColor, backgroundColor: 'transparent' }}
+                  />
+                </Button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Stroke Color</p>
+            </TooltipContent>
+          </Tooltip>
           <PopoverContent className="w-64 bg-black/80 backdrop-blur-md border-white/20">
             <div className="space-y-3">
               <label className="text-sm font-medium text-white">Stroke Color</label>
@@ -292,18 +321,25 @@ const Toolbar = () => {
 
           {activeTool === 'brush' && (
             <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-10 w-16 p-1 bg-white/5 border-white/20 hover:bg-white/10"
-                >
-                  <div
-                    className="w-full h-full rounded border border-white/30"
-                    style={{ backgroundColor: brushColor }}
-                  />
-                </Button>
-              </PopoverTrigger>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-10 w-16 p-1 bg-white/5 border-white/20 hover:bg-white/10"
+                    >
+                      <div
+                        className="w-full h-full rounded border border-white/30"
+                        style={{ backgroundColor: brushColor }}
+                      />
+                    </Button>
+                  </PopoverTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Brush Color</p>
+                </TooltipContent>
+              </Tooltip>
               <PopoverContent className="w-64 bg-black/80 backdrop-blur-md border-white/20">
                 <div className="space-y-3">
                   <label className="text-sm font-medium text-white">Brush Color</label>
@@ -347,52 +383,88 @@ const Toolbar = () => {
           className="hidden"
         />
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => fileInputRef.current?.click()}
-          className="h-10 w-10 p-0 hover:bg-white/10 text-white/70 hover:text-white"
-        >
-          <Upload size={18} />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              className="h-10 w-10 p-0 hover:bg-white/10 text-white/70 hover:text-white"
+            >
+              <Upload size={18} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Upload Image</p>
+          </TooltipContent>
+        </Tooltip>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleDownload}
-          className="h-10 w-10 p-0 hover:bg-white/10 text-white/70 hover:text-white"
-        >
-          <Download size={18} />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDownload}
+              className="h-10 w-10 p-0 hover:bg-white/10 text-white/70 hover:text-white"
+            >
+              <Download size={18} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Download Design</p>
+          </TooltipContent>
+        </Tooltip>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleCopy}
-          className="h-10 w-10 p-0 hover:bg-white/10 text-white/70 hover:text-white"
-        >
-          <Copy size={18} />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCopy}
+              className="h-10 w-10 p-0 hover:bg-white/10 text-white/70 hover:text-white"
+            >
+              <Copy size={18} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Duplicate Selected</p>
+          </TooltipContent>
+        </Tooltip>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={deleteSelected}
-          className="h-10 w-10 p-0 hover:bg-white/10 text-white/70 hover:text-white"
-        >
-          <Trash2 size={18} />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={deleteSelected}
+              className="h-10 w-10 p-0 hover:bg-white/10 text-white/70 hover:text-white"
+            >
+              <Trash2 size={18} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Delete Selected</p>
+          </TooltipContent>
+        </Tooltip>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleClear}
-          className="h-10 w-10 p-0 hover:bg-white/10 text-red-400 hover:text-red-300"
-        >
-          <Layers size={18} />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClear}
+              className="h-10 w-10 p-0 hover:bg-white/10 text-red-400 hover:text-red-300"
+            >
+              <Layers size={18} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Clear Canvas</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </div>
+    </TooltipProvider>
   );
 };
 

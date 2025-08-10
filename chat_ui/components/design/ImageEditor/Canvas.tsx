@@ -3,6 +3,10 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import * as fabric from 'fabric';
 import { useImageEditor } from './context';
+import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const Canvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -47,9 +51,9 @@ const Canvas = () => {
     e.preventDefault();
 
     if (e.ctrlKey || e.metaKey) {
-      // Zoom
+      // Zoom with professional range (1% to 10,000%)
       const delta = e.deltaY > 0 ? 0.9 : 1.1;
-      const newZoom = Math.max(0.1, Math.min(5, zoom * delta));
+      const newZoom = Math.max(0.01, Math.min(100, zoom * delta));
       setZoom(newZoom);
 
       if (canvas) {
@@ -107,6 +111,38 @@ const Canvas = () => {
 
       // Zoom shortcuts
       if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+        e.preventDefault();
+        setZoom(1);
+        if (canvas) {
+          canvas.setZoom(1);
+          canvas.renderAll();
+        }
+      }
+
+      // Zoom In (Ctrl/Cmd + Plus/Equal)
+      if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
+        e.preventDefault();
+        const newZoom = Math.min(100, zoom * 1.25);
+        setZoom(newZoom);
+        if (canvas) {
+          canvas.setZoom(newZoom);
+          canvas.renderAll();
+        }
+      }
+
+      // Zoom Out (Ctrl/Cmd + Minus)
+      if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+        e.preventDefault();
+        const newZoom = Math.max(0.01, zoom * 0.8);
+        setZoom(newZoom);
+        if (canvas) {
+          canvas.setZoom(newZoom);
+          canvas.renderAll();
+        }
+      }
+
+      // Fit to Screen (Ctrl/Cmd + 1)
+      if ((e.ctrlKey || e.metaKey) && e.key === '1') {
         e.preventDefault();
         setZoom(1);
         if (canvas) {
@@ -305,7 +341,7 @@ const Canvas = () => {
   return (
     <div
       ref={containerRef}
-      className="w-[calc(100vh-250px)] overflow-hidden"
+      className="w-[calc(100vw-271px)]  overflow-hidden"
       style={{
         background: `
           radial-gradient(circle at 25% 25%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
@@ -341,9 +377,70 @@ const Canvas = () => {
         }}
       />
 
-      {/* Zoom indicator */}
-      <div className="fixed bottom-4 right-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-lg text-sm">
-        {Math.round(zoom * 100)}%
+      {/* Zoom indicator with interactive slider */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-lg text-sm hover:bg-black/60 transition-colors cursor-pointer">
+              {Math.round(zoom * 100)}%
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 bg-black/80 backdrop-blur-md border-white/20" side="top">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-white">Zoom Level</label>
+                <span className="text-sm text-white/70">{Math.round(zoom * 100)}%</span>
+              </div>
+              <Slider
+                value={[zoom * 100]}
+                onValueChange={(value) => {
+                  const newZoom = value[0] / 100;
+                  setZoom(newZoom);
+                  if (canvas) {
+                    canvas.setZoom(newZoom);
+                    canvas.renderAll();
+                  }
+                }}
+                max={10000}
+                min={1}
+                step={1}
+                className="flex-1"
+              />
+              {/* Zoom Presets */}
+              <div className="space-y-3">
+                <div className="flex gap-1 flex-wrap justify-center">
+                  {[25, 50, 75, 100, 125, 150, 200, 400, 800, 1600].map((percent) => (
+                    <button
+                      key={percent}
+                      onClick={() => {
+                        const newZoom = percent / 100;
+                        setZoom(newZoom);
+                        if (canvas) {
+                          canvas.setZoom(newZoom);
+                          canvas.renderAll();
+                        }
+                      }}
+                      className={`px-2 py-1 text-xs rounded transition-colors ${
+                        Math.round(zoom * 100) === percent
+                          ? 'bg-white/30 text-white font-medium'
+                          : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                      }`}
+                    >
+                      {percent}%
+                    </button>
+                  ))}
+                </div>
+
+                {/* Range Labels */}
+                <div className="flex items-center justify-between text-xs text-white/50">
+                  <span>1%</span>
+                  <span className="text-white/70">Professional Zoom Range</span>
+                  <span>10000%</span>
+                </div>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
     </div>
   );
