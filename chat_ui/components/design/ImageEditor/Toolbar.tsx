@@ -22,7 +22,8 @@ import {
   Copy,
   Layers,
   Hand,
-  Move
+  Move,
+  Crop
 } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 
@@ -52,6 +53,7 @@ const Toolbar = () => {
   const tools: { id: Tool; icon: React.ReactNode; label: string }[] = [
     { id: 'select', icon: <MousePointer2 size={18} />, label: 'Select' },
     { id: 'hand', icon: <Hand size={18} />, label: 'Hand' },
+    { id: 'selection', icon: <Crop size={18} />, label: 'Select Area' },
     { id: 'rectangle', icon: <Square size={18} />, label: 'Rectangle' },
     { id: 'circle', icon: <Circle size={18} />, label: 'Circle' },
     { id: 'text', icon: <Type size={18} />, label: 'Text' },
@@ -236,7 +238,7 @@ const Toolbar = () => {
                 <Toggle
                   pressed={activeTool === tool.id}
                   onPressedChange={() => handleToolSelect(tool.id)}
-                  className="h-10 w-10 data-[state=on]:bg-white/20 data-[state=on]:text-white hover:bg-white/10"
+                  className={`h-10 w-10 hover:bg-white/10 ${activeTool === tool.id ? 'bg-white/20 text-white' : ''}`}
                   aria-label={tool.label}
                 >
                   {tool.icon}

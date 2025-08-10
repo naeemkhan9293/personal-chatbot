@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 import * as fabric from 'fabric';
 
-export type Tool = 'select' | 'rectangle' | 'circle' | 'text' | 'brush' | 'eraser' | 'image' | 'hand';
+export type Tool = 'select' | 'rectangle' | 'circle' | 'text' | 'brush' | 'eraser' | 'image' | 'hand' | 'selection';
 
 // Define the shape of the context state
 interface ImageEditorContextType {
@@ -59,7 +59,7 @@ export const ImageEditorProvider = ({ children }: ImageEditorProviderProps) => {
   const [panY, setPanY] = useState(0);
 
   // Toolbar position
-  const [toolbarPosition, setToolbarPosition] = useState({ x: 500, y: 56 });
+  const [toolbarPosition, setToolbarPosition] = useState({ x: 500, y: 60 });
 
   return (
     <ImageEditorContext.Provider value={{

@@ -14,6 +14,7 @@ const Canvas = () => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 });
+  const [selectionRect, setSelectionRect] = useState<fabric.Rect | null>(null);
 
   const {
     canvas,
@@ -214,7 +215,12 @@ const Canvas = () => {
         canvas.freeDrawingBrush.color = brushColor;
         (canvas.freeDrawingBrush as any).globalCompositeOperation = 'source-over';
       }
-    } else if (activeTool === 'eraser') {
+    } else if (activeTool === 'selection') {
+      canvas.isDrawingMode = false;
+      canvas.selection = true;
+      canvas.defaultCursor = 'crosshair';
+    }
+    else if (activeTool === 'eraser') {
       canvas.isDrawingMode = true;
       if (canvas.freeDrawingBrush) {
         canvas.freeDrawingBrush.width = brushSize;
@@ -247,6 +253,23 @@ const Canvas = () => {
       origX = pointer.x;
       origY = pointer.y;
 
+      if (currentTool === 'selection') {
+        canvas.selection = false;
+        const rect = new fabric.Rect({
+          left: origX,
+          top: origY,
+          width: 0,
+          height: 0,
+          fill: 'rgba(0,0,0,0.3)',
+          stroke: 'black',
+          strokeDashArray: [5, 5],
+          selectable: true,
+        });
+        setSelectionRect(rect);
+        canvas.add(rect);
+        return; // Prevent creating other shapes
+      }
+
       if (currentTool === 'rectangle') {
         shape = new fabric.Rect({
           left: origX,
@@ -276,12 +299,24 @@ const Canvas = () => {
     };
 
     const onMouseMove = (o: any) => {
-      if (!isDown || !shape) return;
+      if (!isDown) return;
 
       const pointer = canvas.getPointer(o.e);
       const currentTool = (canvas as any).activeTool || activeTool;
 
-      if (currentTool === 'rectangle') {
+      if (currentTool === 'selection' && selectionRect) {
+        const rect = selectionRect;
+        rect.set({
+          width: Math.abs(pointer.x - origX),
+          height: Math.abs(pointer.y - origY),
+        });
+        if (pointer.x < origX) {
+          rect.set({ left: pointer.x });
+        }
+        if (pointer.y < origY) {
+          rect.set({ top: pointer.y });
+        }
+      } else if (currentTool === 'rectangle' && shape) {
         const rect = shape as fabric.Rect;
         rect.set({
           width: Math.abs(pointer.x - origX),
@@ -303,6 +338,16 @@ const Canvas = () => {
     };
 
     const onMouseUp = () => {
+      isDown = false;
+      const currentTool = (canvas as any).activeTool || activeTool;
+
+      if (currentTool === 'selection' && selectionRect) {
+        cropToSelection(selectionRect);
+        canvas.remove(selectionRect);
+        setSelectionRect(null);
+        canvas.selection = true; // Re-enable selection
+      }
+
       if (shape) {
         shape.set({ selectable: true });
         shape = null;
@@ -319,7 +364,29 @@ const Canvas = () => {
       canvas.off('mouse:move', onMouseMove);
       canvas.off('mouse:up', onMouseUp);
     };
-  }, [activeTool, fillColor, strokeColor, strokeWidth]);
+  }, [activeTool, fillColor, strokeColor, strokeWidth, selectionRect]);
+
+  const cropToSelection = (rect: fabric.Rect) => {
+    if (!canvas || !rect.width || !rect.height) return;
+
+    const cropped = new Image();
+    cropped.src = canvas.toDataURL({
+      left: rect.left,
+      top: rect.top,
+      width: rect.width,
+      height: rect.height,
+      multiplier: 1,
+    });
+
+    cropped.onload = () => {
+      canvas.clear();
+      const image = new fabric.FabricImage(cropped);
+      canvas.setWidth(rect.width || 0);
+      canvas.setHeight(rect.height || 0);
+      canvas.add(image);
+      canvas.renderAll();
+    };
+  };
 
   // Initialize canvas when dimensions are available
   useEffect(() => {
@@ -368,6 +435,25 @@ const Canvas = () => {
     };
   }, [handleWheel, handleMouseDown, handleMouseMove, handleMouseUp]);
 
+  const getCursor = () => {
+    if (isPanning) return 'grabbing';
+    switch (activeTool) {
+      case 'hand':
+        return 'grab';
+      case 'rectangle':
+      case 'circle':
+      case 'selection':
+      case 'brush':
+      case 'eraser':
+        return 'crosshair';
+      case 'text':
+        return 'text';
+      case 'select':
+      default:
+        return 'default';
+    }
+  };
+
   return (
     <div
       ref={containerRef}
@@ -378,7 +464,7 @@ const Canvas = () => {
           radial-gradient(circle at 75% 75%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
           linear-gradient(135deg, #667eea 0%, #764ba2 100%)
         `,
-        cursor: activeTool === 'hand' ? 'grab' : isPanning ? 'grabbing' : 'default'
+        cursor: getCursor()
       }}
     >
       {/* Infinite grid background */}
