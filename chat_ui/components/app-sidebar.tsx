@@ -9,6 +9,7 @@ import {
   Frame,
   GalleryVerticalEnd,
   Map,
+  PencilRulerIcon,
   PieChart,
   Settings2,
   SquareTerminal,
@@ -34,23 +35,6 @@ const data = {
     email: "user@assistant.com",
     avatar: "/robot.png",
   },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
       title: "Playground",
@@ -59,100 +43,29 @@ const data = {
       isActive: true,
       items: [
         {
-          title: "History",
-          url: "#",
+          title: "Generate Image",
+          url: "/dashboard/chat/new?com=generate_image",
         },
         {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
+          title: "Scrap WebSite",
+          url: "/dashboard/chat/new?com=generate_image",
         },
       ],
     },
     {
-      title: "Models",
+      title: "Design",
       url: "#",
-      icon: Bot,
+      icon: PencilRulerIcon,
       items: [
         {
-          title: "Genesis",
-          url: "#",
+          title: "Poster Design",
+          url: "/dashboard/design/new?com=generate_poster_images",
         },
         {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
+          title: "Logo Design",
+          url: "/dashboard/design/new?com=generate_logo_images",
         },
       ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
     },
   ],
 };
