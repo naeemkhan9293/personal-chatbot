@@ -57,7 +57,6 @@ const Toolbar = () => {
     { id: 'text', icon: <Type size={18} />, label: 'Text' },
     { id: 'brush', icon: <Brush size={18} />, label: 'Brush' },
     { id: 'eraser', icon: <Eraser size={18} />, label: 'Eraser' },
-    { id: 'image', icon: <Image size={18} />, label: 'Image' },
   ];
 
   const handleToolSelect = (tool: Tool) => {
@@ -391,7 +390,8 @@ const Toolbar = () => {
               onClick={() => fileInputRef.current?.click()}
               className="h-10 w-10 p-0 hover:bg-white/10 text-white/70 hover:text-white"
             >
-              <Upload size={18} />
+              {/* <Upload size={18} /> */}
+              <Image size={18} />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
