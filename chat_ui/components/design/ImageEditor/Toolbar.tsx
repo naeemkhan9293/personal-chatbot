@@ -138,9 +138,15 @@ const Toolbar = () => {
 
   const deleteSelected = () => {
     if (canvas) {
-      const activeObjects = canvas.getActiveObjects();
-      if (activeObjects.length) {
-        activeObjects.forEach((obj) => canvas.remove(obj));
+      const activeObject = canvas.getActiveObject();
+      if (activeObject) {
+        if (activeObject.type === 'activeSelection') {
+          (activeObject as fabric.ActiveSelection).forEachObject((obj) => {
+            canvas.remove(obj);
+          });
+        } else {
+          canvas.remove(activeObject);
+        }
         canvas.discardActiveObject();
         canvas.renderAll();
       }
@@ -182,6 +188,20 @@ const Toolbar = () => {
       };
     }
   }, [isDragging, dragOffset]);
+
+  // Add global keydown event listener for deleting objects
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        deleteSelected();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [canvas]);
 
   return (
     <TooltipProvider>

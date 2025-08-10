@@ -46,30 +46,32 @@ const Canvas = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Handle wheel events for zooming
+  // Handle wheel events for zooming and panning
   const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
+    if (!canvas) return;
 
     if (e.ctrlKey || e.metaKey) {
-      // Zoom with professional range (1% to 10,000%)
+      // Zoom towards the mouse pointer
       const delta = e.deltaY > 0 ? 0.9 : 1.1;
-      const newZoom = Math.max(0.01, Math.min(100, zoom * delta));
-      setZoom(newZoom);
-
-      if (canvas) {
-        canvas.setZoom(newZoom);
-        canvas.renderAll();
-      }
+      const newZoom = Math.max(0.01, Math.min(100, canvas.getZoom() * delta));
+      const point = new fabric.Point(e.offsetX, e.offsetY);
+      canvas.zoomToPoint(point, newZoom);
     } else {
-      // Pan
-      setPanX(panX - e.deltaX);
-      setPanY(panY - e.deltaY);
-
-      if (canvas) {
-        canvas.relativePan(new fabric.Point(-e.deltaX, -e.deltaY));
-      }
+      // Pan with the wheel
+      const delta = new fabric.Point(-e.deltaX, -e.deltaY);
+      canvas.relativePan(delta);
     }
-  }, [canvas, zoom, setZoom, panX, setPanX, panY, setPanY]);
+
+    // Sync state with canvas viewport
+    const vpt = canvas.viewportTransform;
+    if (vpt) {
+      setZoom(vpt[0]);
+      setPanX(vpt[4]);
+      setPanY(vpt[5]);
+    }
+    canvas.renderAll();
+  }, [canvas, setZoom, setPanX, setPanY]);
 
   // Handle panning with space + drag or hand tool
   const handleMouseDown = useCallback((e: MouseEvent) => {
@@ -81,20 +83,22 @@ const Canvas = () => {
   }, [activeTool]);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (isPanning) {
+    if (isPanning && canvas) {
       const deltaX = e.clientX - lastPanPoint.x;
       const deltaY = e.clientY - lastPanPoint.y;
 
-      setPanX(panX + deltaX);
-      setPanY(panY + deltaY);
-
-      if (canvas) {
-        canvas.relativePan(new fabric.Point(deltaX, deltaY));
+      canvas.relativePan(new fabric.Point(deltaX, deltaY));
+      
+      // Sync state with canvas viewport
+      const vpt = canvas.viewportTransform;
+      if (vpt) {
+        setPanX(vpt[4]);
+        setPanY(vpt[5]);
       }
 
       setLastPanPoint({ x: e.clientX, y: e.clientY });
     }
-  }, [isPanning, lastPanPoint, canvas, panX, setPanX, panY, setPanY]);
+  }, [isPanning, lastPanPoint, canvas, setPanX, setPanY]);
 
   const handleMouseUp = useCallback(() => {
     setIsPanning(false);
@@ -112,9 +116,16 @@ const Canvas = () => {
       // Zoom shortcuts
       if ((e.ctrlKey || e.metaKey) && e.key === '0') {
         e.preventDefault();
-        setZoom(1);
         if (canvas) {
-          canvas.setZoom(1);
+          // Reset zoom to 100% and center the view
+          const center = new fabric.Point(canvas.getWidth() / 2, canvas.getHeight() / 2);
+          canvas.zoomToPoint(center, 1);
+          const vpt = canvas.viewportTransform;
+          if (vpt) {
+            setZoom(vpt[0]);
+            setPanX(vpt[4]);
+            setPanY(vpt[5]);
+          }
           canvas.renderAll();
         }
       }
@@ -122,10 +133,16 @@ const Canvas = () => {
       // Zoom In (Ctrl/Cmd + Plus/Equal)
       if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
         e.preventDefault();
-        const newZoom = Math.min(100, zoom * 1.25);
-        setZoom(newZoom);
         if (canvas) {
-          canvas.setZoom(newZoom);
+          const newZoom = Math.min(100, canvas.getZoom() * 1.25);
+          const center = new fabric.Point(canvas.getWidth() / 2, canvas.getHeight() / 2);
+          canvas.zoomToPoint(center, newZoom);
+          const vpt = canvas.viewportTransform;
+          if (vpt) {
+            setZoom(vpt[0]);
+            setPanX(vpt[4]);
+            setPanY(vpt[5]);
+          }
           canvas.renderAll();
         }
       }
@@ -133,10 +150,16 @@ const Canvas = () => {
       // Zoom Out (Ctrl/Cmd + Minus)
       if ((e.ctrlKey || e.metaKey) && e.key === '-') {
         e.preventDefault();
-        const newZoom = Math.max(0.01, zoom * 0.8);
-        setZoom(newZoom);
         if (canvas) {
-          canvas.setZoom(newZoom);
+          const newZoom = Math.max(0.01, canvas.getZoom() * 0.8);
+          const center = new fabric.Point(canvas.getWidth() / 2, canvas.getHeight() / 2);
+          canvas.zoomToPoint(center, newZoom);
+          const vpt = canvas.viewportTransform;
+          if (vpt) {
+            setZoom(vpt[0]);
+            setPanX(vpt[4]);
+            setPanY(vpt[5]);
+          }
           canvas.renderAll();
         }
       }
@@ -144,9 +167,16 @@ const Canvas = () => {
       // Fit to Screen (Ctrl/Cmd + 1)
       if ((e.ctrlKey || e.metaKey) && e.key === '1') {
         e.preventDefault();
-        setZoom(1);
         if (canvas) {
-          canvas.setZoom(1);
+          // This can be customized to fit objects, for now, it resets to 100%
+          const center = new fabric.Point(canvas.getWidth() / 2, canvas.getHeight() / 2);
+          canvas.zoomToPoint(center, 1);
+          const vpt = canvas.viewportTransform;
+          if (vpt) {
+            setZoom(vpt[0]);
+            setPanX(vpt[4]);
+            setPanY(vpt[5]);
+          }
           canvas.renderAll();
         }
       }
@@ -341,7 +371,7 @@ const Canvas = () => {
   return (
     <div
       ref={containerRef}
-      className="w-[calc(100vw-271px)]  overflow-hidden"
+      className="fixed inset-0 overflow-hidden"
       style={{
         background: `
           radial-gradient(circle at 25% 25%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
@@ -359,10 +389,8 @@ const Canvas = () => {
             linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
             linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
           `,
-          backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
+          backgroundSize: `20px 20px`,
           backgroundPosition: `${panX}px ${panY}px`,
-          transform: `scale(${zoom})`,
-          transformOrigin: '0 0'
         }}
       />
 
