@@ -2,6 +2,7 @@
 
 import { useImageEditor, Tool } from './context';
 import * as fabric from 'fabric';
+import { getToolDisplayName, getToolShortcut } from './cursors';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Toggle } from '@/components/ui/toggle';
@@ -17,13 +18,13 @@ import {
   Eraser,
   Image,
   Download,
-  Upload,
   Trash2,
   Copy,
   Layers,
   Hand,
   Move,
-  Crop
+  Crop,
+  Settings
 } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 
@@ -43,7 +44,8 @@ const Toolbar = () => {
     strokeWidth,
     setStrokeWidth,
     toolbarPosition,
-    setToolbarPosition
+    setToolbarPosition,
+    showBoardSizeSettings
   } = useImageEditor();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -232,23 +234,29 @@ const Toolbar = () => {
 
         {/* Tool Selection */}
         <div className="flex items-center flex-wrap gap-1 bg-white/5 rounded-lg p-1" onMouseDown={(e) => e.stopPropagation()}>
-          {tools.map((tool) => (
-            <Tooltip key={tool.id}>
-              <TooltipTrigger asChild>
-                <Toggle
-                  pressed={activeTool === tool.id}
-                  onPressedChange={() => handleToolSelect(tool.id)}
-                  className={`h-10 w-10 hover:bg-white/10 ${activeTool === tool.id ? 'bg-white/20 text-white' : ''}`}
-                  aria-label={tool.label}
-                >
-                  {tool.icon}
-                </Toggle>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{tool.label}</p>
-              </TooltipContent>
-            </Tooltip>
-          ))}
+          {tools.map((tool) => {
+            const shortcut = getToolShortcut(tool.id);
+            return (
+              <Tooltip key={tool.id}>
+                <TooltipTrigger asChild>
+                  <Toggle
+                    pressed={activeTool === tool.id}
+                    onPressedChange={() => handleToolSelect(tool.id)}
+                    className={`h-10 w-10 hover:bg-white/10 ${activeTool === tool.id ? 'bg-white/20 text-white' : ''}`}
+                    aria-label={tool.label}
+                  >
+                    {tool.icon}
+                  </Toggle>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="text-center">
+                    <p>{tool.label}</p>
+                    {shortcut && <p className="text-xs text-white/60 mt-1">{shortcut}</p>}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
         </div>
 
       <Separator orientation="vertical" className="h-8 bg-white/20" />
@@ -426,6 +434,25 @@ const Toolbar = () => {
             <Button
               variant="ghost"
               size="sm"
+              onClick={showBoardSizeSettings}
+              className="h-10 w-10 p-0 hover:bg-white/10 text-white/70 hover:text-white"
+            >
+              <Settings size={18} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <div className="text-center">
+              <p>Board Settings</p>
+              <p className="text-xs text-white/60 mt-1">Change canvas size</p>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleDownload}
               className="h-10 w-10 p-0 hover:bg-white/10 text-white/70 hover:text-white"
             >
@@ -465,7 +492,10 @@ const Toolbar = () => {
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Delete Selected</p>
+            <div className="text-center">
+              <p>Delete Selected</p>
+              <p className="text-xs text-white/60 mt-1">Delete / Backspace</p>
+            </div>
           </TooltipContent>
         </Tooltip>
 

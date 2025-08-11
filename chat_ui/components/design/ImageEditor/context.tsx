@@ -5,6 +5,14 @@ import * as fabric from 'fabric';
 
 export type Tool = 'select' | 'rectangle' | 'circle' | 'text' | 'brush' | 'eraser' | 'image' | 'hand' | 'selection';
 
+export type Unit = 'px' | 'cm' | 'in' | 'ft';
+
+export interface BoardSize {
+  width: number;
+  height: number;
+  unit: Unit;
+}
+
 // Define the shape of the context state
 interface ImageEditorContextType {
   canvas: fabric.Canvas | null;
@@ -33,6 +41,13 @@ interface ImageEditorContextType {
   // Toolbar position
   toolbarPosition: { x: number; y: number };
   setToolbarPosition: (position: { x: number; y: number }) => void;
+  // Board size state
+  boardSize: BoardSize | null;
+  setBoardSize: (size: BoardSize | null) => void;
+  showBoardSizeModal: boolean;
+  setShowBoardSizeModal: (show: boolean) => void;
+  // Helper function to show board size modal
+  showBoardSizeSettings: () => void;
 }
 
 // Create the context with a default value
@@ -61,6 +76,23 @@ export const ImageEditorProvider = ({ children }: ImageEditorProviderProps) => {
   // Toolbar position
   const [toolbarPosition, setToolbarPosition] = useState({ x: 500, y: 60 });
 
+  // Board size state
+  const [boardSize, setBoardSize] = useState<BoardSize | null>(null);
+  const [showBoardSizeModal, setShowBoardSizeModal] = useState(true); // Show modal by default when no board size is set
+
+  // Custom setBoardSize that also handles modal visibility
+  const handleSetBoardSize = (size: BoardSize | null) => {
+    setBoardSize(size);
+    if (size) {
+      setShowBoardSizeModal(false); // Hide modal when board size is set
+    }
+  };
+
+  // Helper function to show board size settings
+  const showBoardSizeSettings = () => {
+    setShowBoardSizeModal(true);
+  };
+
   return (
     <ImageEditorContext.Provider value={{
       canvas,
@@ -86,7 +118,12 @@ export const ImageEditorProvider = ({ children }: ImageEditorProviderProps) => {
       panY,
       setPanY,
       toolbarPosition,
-      setToolbarPosition
+      setToolbarPosition,
+      boardSize,
+      setBoardSize: handleSetBoardSize,
+      showBoardSizeModal,
+      setShowBoardSizeModal,
+      showBoardSizeSettings
     }}>
       {children}
     </ImageEditorContext.Provider>

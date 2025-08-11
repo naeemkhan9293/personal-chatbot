@@ -6,6 +6,7 @@ import { useImageEditor } from './context';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { getToolCursor, KEYBOARD_SHORTCUTS } from './cursors';
 
 const Canvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -19,6 +20,7 @@ const Canvas = () => {
     canvas,
     setCanvas,
     activeTool,
+    setActiveTool,
     brushSize,
     brushColor,
     fillColor,
@@ -29,7 +31,8 @@ const Canvas = () => {
     panX,
     setPanX,
     panY,
-    setPanY
+    setPanY,
+    boardSize
   } = useImageEditor();
 
   // Handle window resize to make canvas fullscreen
@@ -111,6 +114,14 @@ const Canvas = () => {
       if (e.code === 'Space' && !e.repeat) {
         e.preventDefault();
         document.body.style.cursor = 'grab';
+      }
+
+      // Tool shortcuts (Ctrl + Key)
+      if ((e.ctrlKey || e.metaKey) && KEYBOARD_SHORTCUTS[e.code]) {
+        e.preventDefault();
+        const tool = KEYBOARD_SHORTCUTS[e.code];
+        setActiveTool(tool);
+        return;
       }
 
       // Zoom shortcuts
@@ -416,6 +427,54 @@ const Canvas = () => {
     }
   }, [canvas, setupCanvasEvents]);
 
+  // Create board rectangle when boardSize is set
+  useEffect(() => {
+    if (canvas && boardSize) {
+      // Convert board size to pixels
+      const UNIT_TO_PX: Record<string, number> = {
+        px: 1,
+        cm: 37.8, // 1 cm ≈ 37.8 pixels at 96 DPI
+        in: 96,   // 1 inch = 96 pixels at 96 DPI
+        ft: 1152  // 1 foot = 12 inches = 1152 pixels at 96 DPI
+      };
+
+      const boardWidthPx = boardSize.width * UNIT_TO_PX[boardSize.unit];
+      const boardHeightPx = boardSize.height * UNIT_TO_PX[boardSize.unit];
+
+      // Clear existing board if any
+      const existingBoard = canvas.getObjects().find(obj => (obj as any).isBoard);
+      if (existingBoard) {
+        canvas.remove(existingBoard);
+      }
+
+      // Create board rectangle centered on canvas
+      const centerX = dimensions.width / 2;
+      const centerY = dimensions.height / 2;
+
+      const boardRect = new fabric.Rect({
+        left: centerX - boardWidthPx / 2,
+        top: centerY - boardHeightPx / 2,
+        width: boardWidthPx,
+        height: boardHeightPx,
+        fill: 'white',
+        stroke: '#e5e7eb',
+        strokeWidth: 2,
+        selectable: false,
+        evented: false,
+        excludeFromExport: false,
+      });
+
+      // Mark as board for identification
+      (boardRect as any).isBoard = true;
+
+      // Add board to canvas (send to back)
+      canvas.add(boardRect);
+      // Move board to the back (index 0)
+      canvas.moveObjectTo(boardRect, 0);
+      canvas.renderAll();
+    }
+  }, [canvas, boardSize, dimensions]);
+
   // Add event listeners for mouse and wheel events
   useEffect(() => {
     const container = containerRef.current;
@@ -435,22 +494,7 @@ const Canvas = () => {
   }, [handleWheel, handleMouseDown, handleMouseMove, handleMouseUp]);
 
   const getCursor = () => {
-    if (isPanning) return 'grabbing';
-    switch (activeTool) {
-      case 'hand':
-        return 'grab';
-      case 'rectangle':
-      case 'circle':
-      case 'selection':
-      case 'brush':
-      case 'eraser':
-        return 'crosshair';
-      case 'text':
-        return 'text';
-      case 'select':
-      default:
-        return 'default';
-    }
+    return getToolCursor(activeTool, isPanning);
   };
 
   return (
@@ -503,6 +547,9 @@ const Canvas = () => {
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium text-white">Zoom Level</label>
                 <span className="text-sm text-white/70">{Math.round(zoom * 100)}%</span>
+              </div>
+              <div className="text-xs text-white/50 text-center">
+                <p>Ctrl + 0: Reset • Ctrl + +: Zoom In • Ctrl + -: Zoom Out</p>
               </div>
               <Slider
                 value={[zoom * 100]}
