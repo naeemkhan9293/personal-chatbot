@@ -231,7 +231,7 @@ const Toolbar = () => {
         <Separator orientation="vertical" className="h-8 bg-white/20" />
 
         {/* Tool Selection */}
-        <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1" onMouseDown={(e) => e.stopPropagation()}>
+        <div className="flex items-center flex-wrap gap-1 bg-white/5 rounded-lg p-1" onMouseDown={(e) => e.stopPropagation()}>
           {tools.map((tool) => (
             <Tooltip key={tool.id}>
               <TooltipTrigger asChild>
@@ -254,7 +254,7 @@ const Toolbar = () => {
       <Separator orientation="vertical" className="h-8 bg-white/20" />
 
       {/* Color Controls */}
-      <div className="flex items-center gap-2" onMouseDown={(e) => e.stopPropagation()}>
+      <div className="flex flex-wrap items-center gap-2" onMouseDown={(e) => e.stopPropagation()}>
         <Popover>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -395,7 +395,7 @@ const Toolbar = () => {
       <Separator orientation="vertical" className="h-8 bg-white/20" />
 
       {/* Action Buttons */}
-      <div className="flex items-center gap-1" onMouseDown={(e) => e.stopPropagation()}>
+      <div className="flex flex-wrap items-center gap-1" onMouseDown={(e) => e.stopPropagation()}>
         <input
           ref={fileInputRef}
           type="file"
