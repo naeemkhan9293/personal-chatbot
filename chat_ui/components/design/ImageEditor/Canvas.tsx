@@ -427,6 +427,32 @@ const Canvas = () => {
     }
   }, [canvas, setupCanvasEvents]);
 
+  // Update canvas cursor when tool changes
+  useEffect(() => {
+    if (canvas) {
+      const cursor = getToolCursor(activeTool, isPanning);
+
+      // Override Fabric.js cursor settings
+      canvas.defaultCursor = cursor;
+      canvas.hoverCursor = cursor;
+      canvas.moveCursor = cursor;
+      canvas.freeDrawingCursor = cursor;
+
+      // Also set cursor on the canvas element directly
+      const canvasElement = canvas.getElement();
+      if (canvasElement) {
+        canvasElement.style.cursor = cursor;
+      }
+
+      // Set cursor on container as well
+      if (containerRef.current) {
+        containerRef.current.style.cursor = cursor;
+      }
+
+      canvas.renderAll();
+    }
+  }, [canvas, activeTool, isPanning]);
+
   // Create board rectangle when boardSize is set
   useEffect(() => {
     if (canvas && boardSize) {

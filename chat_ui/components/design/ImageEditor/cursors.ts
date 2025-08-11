@@ -1,71 +1,24 @@
 import { Tool } from './context';
 
-// SVG cursor icons as data URLs
+// Bigger, more visible cursor icons with better contrast
 const CURSOR_ICONS = {
-  select: `data:image/svg+xml;base64,${btoa(`
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M3 3L10.5 10.5M10.5 10.5L8 21L10.5 18.5L21 8L10.5 10.5Z" stroke="white" stroke-width="2" fill="black"/>
-    </svg>
-  `)}`,
-  
-  brush: `data:image/svg+xml;base64,${btoa(`
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M18.37 2.63L21.37 5.63C21.76 6.02 21.76 6.65 21.37 7.04L19.04 9.37L14.63 4.96L16.96 2.63C17.35 2.24 17.98 2.24 18.37 2.63Z" fill="white" stroke="black" stroke-width="1"/>
-      <path d="M14.63 4.96L19.04 9.37L9.37 19.04C9.18 19.23 8.93 19.34 8.67 19.34H5.34C4.6 19.34 4 18.74 4 18V14.67C4 14.41 4.11 14.16 4.3 13.97L14.63 4.96Z" fill="white" stroke="black" stroke-width="1"/>
-    </svg>
-  `)}`,
-  
-  rectangle: `data:image/svg+xml;base64,${btoa(`
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="3" y="3" width="18" height="12" stroke="white" stroke-width="2" fill="none"/>
-      <circle cx="12" cy="12" r="1" fill="white"/>
-    </svg>
-  `)}`,
-  
-  circle: `data:image/svg+xml;base64,${btoa(`
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="12" cy="9" r="6" stroke="white" stroke-width="2" fill="none"/>
-      <circle cx="12" cy="12" r="1" fill="white"/>
-    </svg>
-  `)}`,
-  
-  text: `data:image/svg+xml;base64,${btoa(`
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M4 7V4H20V7" stroke="white" stroke-width="2"/>
-      <path d="M9 20H15" stroke="white" stroke-width="2"/>
-      <path d="M12 4V20" stroke="white" stroke-width="2"/>
-    </svg>
-  `)}`,
-  
-  eraser: `data:image/svg+xml;base64,${btoa(`
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M20 20H8L2.5 14.5C2.11 14.11 2.11 13.48 2.5 13.09L13.09 2.5C13.48 2.11 14.11 2.11 14.5 2.5L21.5 9.5C21.89 9.89 21.89 10.52 21.5 10.91L15 17.41" stroke="white" stroke-width="2" fill="pink" fill-opacity="0.3"/>
-    </svg>
-  `)}`,
-  
-  hand: `data:image/svg+xml;base64,${btoa(`
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M18 11V6C18 4.9 17.1 4 16 4S14 4.9 14 6V11" stroke="white" stroke-width="2" fill="none"/>
-      <path d="M14 13V7C14 5.9 13.1 5 12 5S10 5.9 10 7V13" stroke="white" stroke-width="2" fill="none"/>
-      <path d="M10 15V9C10 7.9 9.1 7 8 7S6 7.9 6 9V15" stroke="white" stroke-width="2" fill="none"/>
-      <path d="M6 15V11C6 9.9 5.1 9 4 9S2 9.9 2 11V15C2 18.31 4.69 21 8 21H16C19.31 21 22 18.31 22 15V13C22 11.9 21.1 11 20 11S18 11.9 18 13V15" stroke="white" stroke-width="2" fill="white" fill-opacity="0.3"/>
-    </svg>
-  `)}`,
-  
-  image: `data:image/svg+xml;base64,${btoa(`
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="white" stroke-width="2" fill="none"/>
-      <circle cx="8.5" cy="8.5" r="1.5" fill="white"/>
-      <path d="M21 15L16 10L5 21" stroke="white" stroke-width="2"/>
-    </svg>
-  `)}`,
-  
-  selection: `data:image/svg+xml;base64,${btoa(`
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M9 9H15V15H9V9Z" stroke="white" stroke-width="2" stroke-dasharray="3 3" fill="none"/>
-      <circle cx="12" cy="12" r="1" fill="white"/>
-    </svg>
-  `)}`
+  select: `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 3L12 12L9 21L12 18L21 9L12 12Z" fill="white" stroke="black" stroke-width="2"/></svg>')}`,
+
+  brush: `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="6" fill="white" stroke="black" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="black"/></svg>')}`,
+
+  rectangle: `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="6" width="16" height="12" fill="none" stroke="white" stroke-width="3"/><rect x="4" y="6" width="16" height="12" fill="none" stroke="black" stroke-width="1"/><circle cx="12" cy="12" r="2" fill="white" stroke="black" stroke-width="1"/></svg>')}`,
+
+  circle: `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="8" fill="none" stroke="white" stroke-width="3"/><circle cx="12" cy="12" r="8" fill="none" stroke="black" stroke-width="1"/><circle cx="12" cy="12" r="2" fill="white" stroke="black" stroke-width="1"/></svg>')}`,
+
+  text: `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 6H20M12 6V20M8 20H16" stroke="white" stroke-width="3" fill="none"/><path d="M4 6H20M12 6V20M8 20H16" stroke="black" stroke-width="1" fill="none"/></svg>')}`,
+
+  eraser: `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="6" width="12" height="12" fill="pink" stroke="white" stroke-width="2" rx="2"/><rect x="6" y="6" width="12" height="12" fill="none" stroke="black" stroke-width="1" rx="2"/></svg>')}`,
+
+  hand: `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 4V12M9 6V12M15 6V12M6 9V15C6 18 9 21 12 21C15 21 18 18 18 15V9" stroke="white" stroke-width="3" fill="none"/><path d="M12 4V12M9 6V12M15 6V12M6 9V15C6 18 9 21 12 21C15 21 18 18 18 15V9" stroke="black" stroke-width="1" fill="none"/></svg>')}`,
+
+  image: `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" fill="none" stroke="white" stroke-width="3"/><rect x="3" y="3" width="18" height="18" fill="none" stroke="black" stroke-width="1"/><circle cx="7" cy="7" r="2" fill="white" stroke="black" stroke-width="1"/><path d="M21 15L15 9L3 21" stroke="white" stroke-width="3"/><path d="M21 15L15 9L3 21" stroke="black" stroke-width="1"/></svg>')}`,
+
+  selection: `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="6" width="12" height="12" fill="none" stroke="white" stroke-width="3" stroke-dasharray="4 4"/><rect x="6" y="6" width="12" height="12" fill="none" stroke="black" stroke-width="1" stroke-dasharray="4 4"/><circle cx="12" cy="12" r="2" fill="white" stroke="black" stroke-width="1"/></svg>')}`
 };
 
 // Generate CSS cursor string with custom icon
@@ -79,12 +32,21 @@ export const getToolCursor = (tool: Tool, isPanning: boolean = false): string =>
     return `url("${CURSOR_ICONS[tool]}") 12 12, auto`;
   }
 
-  // Fallback to default cursors
+  // Fallback to standard cursors with better differentiation
   switch (tool) {
     case 'hand':
       return 'grab';
     case 'text':
       return 'text';
+    case 'brush':
+    case 'eraser':
+      return 'crosshair';
+    case 'rectangle':
+    case 'circle':
+    case 'selection':
+      return 'crosshair';
+    case 'image':
+      return 'copy';
     case 'select':
     default:
       return 'default';

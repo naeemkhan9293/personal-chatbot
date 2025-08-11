@@ -45,7 +45,8 @@ const Toolbar = () => {
     setStrokeWidth,
     toolbarPosition,
     setToolbarPosition,
-    showBoardSizeSettings
+    showBoardSizeSettings,
+    boardSize
   } = useImageEditor();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -102,16 +103,62 @@ const Toolbar = () => {
   };
 
   const handleDownload = () => {
-    if (canvas) {
-      const dataURL = canvas.toDataURL({
-        format: 'png',
-        quality: 1,
-        multiplier: 1,
-      });
-      const link = document.createElement('a');
-      link.download = 'design.png';
-      link.href = dataURL;
-      link.click();
+    if (canvas && boardSize) {
+      // Unit conversion to pixels
+      const UNIT_TO_PX: Record<string, number> = {
+        px: 1,
+        cm: 37.8, // 1 cm ≈ 37.8 pixels at 96 DPI
+        in: 96,   // 1 inch = 96 pixels at 96 DPI
+        ft: 1152  // 1 foot = 12 inches = 1152 pixels at 96 DPI
+      };
+
+      const boardWidthPx = boardSize.width * UNIT_TO_PX[boardSize.unit];
+      const boardHeightPx = boardSize.height * UNIT_TO_PX[boardSize.unit];
+
+      // Find the board rectangle
+      const boardRect = canvas.getObjects().find(obj => (obj as any).isBoard) as fabric.Rect;
+
+      if (boardRect) {
+        // Get board position and dimensions
+        const left = boardRect.left || 0;
+        const top = boardRect.top || 0;
+        const width = boardRect.width || boardWidthPx;
+        const height = boardRect.height || boardHeightPx;
+
+        // Create a temporary canvas for cropping
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = width;
+        tempCanvas.height = height;
+        const tempCtx = tempCanvas.getContext('2d');
+
+        if (tempCtx) {
+          // Fill with white background (board color)
+          tempCtx.fillStyle = 'white';
+          tempCtx.fillRect(0, 0, width, height);
+
+          // Get the main canvas element
+          const mainCanvasElement = canvas.getElement();
+
+          // Draw the cropped area from main canvas to temp canvas
+          tempCtx.drawImage(
+            mainCanvasElement,
+            left, top, width, height,  // Source rectangle (board area)
+            0, 0, width, height        // Destination rectangle (full temp canvas)
+          );
+
+          // Convert to data URL and download
+          const dataURL = tempCanvas.toDataURL('image/png', 1.0);
+          const link = document.createElement('a');
+          link.download = `design-${boardSize.width}x${boardSize.height}${boardSize.unit}.png`;
+          link.href = dataURL;
+          link.click();
+        }
+      } else {
+        // Fallback: export entire canvas if no board found
+        alert('No board found. Please create a board first using the Board Settings button.');
+      }
+    } else if (canvas && !boardSize) {
+      alert('Please create a board first using the Board Settings button to define the export area.');
     }
   };
 
@@ -460,7 +507,10 @@ const Toolbar = () => {
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Download Design</p>
+            <div className="text-center">
+              <p>Export Board</p>
+              <p className="text-xs text-white/60 mt-1">Download board area only</p>
+            </div>
           </TooltipContent>
         </Tooltip>
 
